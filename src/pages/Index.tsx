@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { GraphProvider } from '@/context/GraphContext';
 import { GraphCanvas } from '@/components/canvas/GraphCanvas';
 import { Toolbar } from '@/components/controls/Toolbar';
@@ -6,9 +6,13 @@ import { AlgorithmPanel } from '@/components/controls/AlgorithmPanel';
 import { StepControls } from '@/components/controls/StepControls';
 import { StatePanel } from '@/components/panels/StatePanel';
 import { JsonImportExport } from '@/components/controls/JsonImportExport';
+import { TextEditorModal } from '@/components/controls/TextEditorModal';
 import { Separator } from '@/components/ui/separator';
 
 const Index: React.FC = () => {
+  const [isTextEditorOpen, setIsTextEditorOpen] = useState(false);
+  const [editorContent, setEditorContent] = useState("");
+
   return (
     <GraphProvider>
       <div className="h-screen flex flex-col bg-background overflow-hidden">
@@ -43,7 +47,7 @@ const Index: React.FC = () => {
         <div className="flex-1 flex overflow-hidden">
           {/* Left toolbar */}
           <div className="p-3">
-            <Toolbar />
+            <Toolbar onTextEditorOpen={() => setIsTextEditorOpen(true)} />
           </div>
 
           {/* Canvas area */}
@@ -73,6 +77,14 @@ const Index: React.FC = () => {
             <span>Select two nodes to add edge</span>
           </div>
         </footer>
+
+        {/* Text Editor Modal */}
+        <TextEditorModal
+          isOpen={isTextEditorOpen}
+          onClose={() => setIsTextEditorOpen(false)}
+          initialContent={editorContent}
+          onContentChange={setEditorContent}
+        />
       </div>
     </GraphProvider>
   );
