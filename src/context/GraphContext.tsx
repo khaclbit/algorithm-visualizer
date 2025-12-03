@@ -146,6 +146,11 @@ export const GraphProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       edges: prev.edges.map(e => e.id === edgeId ? { ...e, weight } : e),
     }));
 
+    // Reset algorithm state since weights changed
+    setSteps([]);
+    setCurrentStepIndex(-1);
+    setIsRunning(false);
+
     return true;
   }, [graph.edges]);
 
