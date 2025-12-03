@@ -1,4 +1,4 @@
-import React, { useRef, useState, useCallback } from 'react';
+import React, { useRef, useState, useCallback, useEffect } from 'react';
 import { useGraph } from '@/context/GraphContext';
 import { Node } from './Node';
 import { Edge } from './Edge';
@@ -24,6 +24,21 @@ export const GraphCanvas: React.FC = () => {
   const svgRef = useRef<SVGSVGElement>(null);
   const [dragNode, setDragNode] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [canvasSize, setCanvasSize] = useState({ width: 800, height: 600 });
+
+  // Update canvas size on mount and resize
+  useEffect(() => {
+    const updateSize = () => {
+      if (svgRef.current) {
+        const rect = svgRef.current.getBoundingClientRect();
+        setCanvasSize({ width: rect.width, height: rect.height });
+      }
+    };
+    
+    updateSize();
+    window.addEventListener('resize', updateSize);
+    return () => window.removeEventListener('resize', updateSize);
+  }, []);
 
   const currentStep = currentStepIndex >= 0 ? steps[currentStepIndex] : null;
 
@@ -100,11 +115,13 @@ export const GraphCanvas: React.FC = () => {
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     if (!dragNode) return;
     const { x, y } = getSvgCoords(e);
+    const nodeRadius = 24;
+    const padding = nodeRadius + 4;
     updateNode(dragNode, {
-      x: Math.max(20, Math.min(580, x - dragOffset.x)),
-      y: Math.max(20, Math.min(380, y - dragOffset.y)),
+      x: Math.max(padding, Math.min(canvasSize.width - padding, x - dragOffset.x)),
+      y: Math.max(padding, Math.min(canvasSize.height - padding, y - dragOffset.y)),
     });
-  }, [dragNode, dragOffset, getSvgCoords, updateNode]);
+  }, [dragNode, dragOffset, getSvgCoords, updateNode, canvasSize]);
 
   const handleMouseUp = useCallback(() => {
     setDragNode(null);

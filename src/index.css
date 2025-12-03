@@ -74,7 +74,8 @@
 
 @layer components {
   .graph-node {
-    @apply transition-all duration-200;
+    /* Only transition color/fill changes, not position */
+    transition: fill 0.15s ease, stroke 0.15s ease, filter 0.15s ease;
   }
 
   .graph-node-default {
@@ -110,7 +111,8 @@
   }
 
   .graph-edge {
-    @apply transition-all duration-200;
+    /* Only transition color changes, not position */
+    transition: stroke 0.15s ease, stroke-width 0.15s ease, filter 0.15s ease;
     stroke: hsl(var(--edge-default));
     stroke-width: 2;
   }
