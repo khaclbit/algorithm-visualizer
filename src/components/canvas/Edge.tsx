@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { EdgeModel, NodeModel } from '@/models/graph';
 import { cn } from '@/lib/utils';
 
@@ -7,6 +7,8 @@ interface EdgeProps {
   nodes: NodeModel[];
   isHighlighted: boolean;
   onClick: () => void;
+  onWeightChange?: (edgeId: string, newWeight: number) => void;
+  mode?: string;
 }
 
 export const Edge: React.FC<EdgeProps> = ({
@@ -14,7 +16,13 @@ export const Edge: React.FC<EdgeProps> = ({
   nodes,
   isHighlighted,
   onClick,
+  onWeightChange,
+  mode = 'select',
 }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValue, setEditValue] = useState(edge.weight.toString());
+  const [hasError, setHasError] = useState(false);
+
   const fromNode = nodes.find(n => n.id === edge.from);
   const toNode = nodes.find(n => n.id === edge.to);
   
@@ -46,8 +54,41 @@ export const Edge: React.FC<EdgeProps> = ({
   const perpX = -ny * 15;
   const perpY = nx * 15;
 
+  const handleClick = (e: React.MouseEvent) => {
+    if (mode === 'delete') {
+      onClick();
+    } else if (mode === 'select' && !isEditing) {
+      setIsEditing(true);
+    }
+  };
+
+  const handleSubmit = async () => {
+    const newWeight = parseFloat(editValue);
+    if (!isNaN(newWeight) && newWeight >= 0 && isFinite(newWeight)) {
+      const success = await onWeightChange?.(edge.id, newWeight);
+      if (success) {
+        setIsEditing(false);
+        setHasError(false);
+      } else {
+        setHasError(true);
+      }
+    } else {
+      setHasError(true);
+      // Keep editing mode to allow correction
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSubmit();
+    } else if (e.key === 'Escape') {
+      setEditValue(edge.weight.toString());
+      setIsEditing(false);
+    }
+  };
+
   return (
-    <g className="cursor-pointer" onClick={onClick}>
+    <g className="cursor-pointer" onClick={handleClick}>
       {/* Edge line */}
       <line
         x1={startX}
@@ -56,7 +97,8 @@ export const Edge: React.FC<EdgeProps> = ({
         y2={endY}
         className={cn(
           'graph-edge',
-          isHighlighted && 'graph-edge-highlight'
+          isHighlighted && 'graph-edge-highlight',
+          isEditing && 'stroke-blue-500'
         )}
         markerEnd={edge.directed ? (isHighlighted ? 'url(#arrowhead-highlight)' : 'url(#arrowhead)') : undefined}
       />
@@ -71,29 +113,58 @@ export const Edge: React.FC<EdgeProps> = ({
         strokeWidth={12}
       />
       
-      {/* Weight label */}
-      {edge.weight !== undefined && (
-        <g>
-          <rect
-            x={midX + perpX - 12}
-            y={midY + perpY - 10}
-            width={24}
-            height={20}
-            rx={4}
-            fill="hsl(var(--card))"
-            stroke="hsl(var(--border))"
-            strokeWidth={1}
+      {/* Weight label or input */}
+      {isEditing ? (
+        <foreignObject
+          x={midX + perpX - 20}
+          y={midY + perpY - 12}
+          width={40}
+          height={24}
+        >
+          <input
+            type="number"
+            min="0"
+            step="1"
+            value={editValue}
+            onChange={(e) => {
+              setEditValue(e.target.value);
+              setHasError(false); // Clear error on change
+            }}
+            onKeyDown={handleKeyDown}
+            onBlur={handleSubmit}
+            className={cn(
+              "w-full h-full text-xs text-center border rounded bg-card",
+              hasError ? "border-red-500" : "border-border"
+            )}
+            autoFocus
+            aria-label={`Edit weight for edge from ${fromNode.label || fromNode.id} to ${toNode.label || toNode.id}`}
+            aria-invalid={hasError}
           />
-          <text
-            x={midX + perpX}
-            y={midY + perpY}
-            textAnchor="middle"
-            dominantBaseline="central"
-            className="fill-muted-foreground font-mono text-xs pointer-events-none select-none"
-          >
-            {edge.weight}
-          </text>
-        </g>
+        </foreignObject>
+      ) : (
+        edge.weight !== undefined && (
+          <g>
+            <rect
+              x={midX + perpX - 12}
+              y={midY + perpY - 10}
+              width={24}
+              height={20}
+              rx={4}
+              fill="hsl(var(--card))"
+              stroke="hsl(var(--border))"
+              strokeWidth={1}
+            />
+            <text
+              x={midX + perpX}
+              y={midY + perpY}
+              textAnchor="middle"
+              dominantBaseline="central"
+              className="fill-muted-foreground font-mono text-xs pointer-events-none select-none"
+            >
+              {edge.weight}
+            </text>
+          </g>
+        )
       )}
     </g>
   );

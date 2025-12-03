@@ -11,7 +11,7 @@ export interface EdgeModel {
   id: string;
   from: NodeId;
   to: NodeId;
-  weight?: number;
+  weight: number;
   directed?: boolean;
 }
 
@@ -28,13 +28,19 @@ export const createNode = (id: string, x: number, y: number): NodeModel => ({
   y,
 });
 
-export const createEdge = (from: NodeId, to: NodeId, weight = 1, directed = false): EdgeModel => ({
-  id: `e-${from}-${to}-${Date.now()}`,
-  from,
-  to,
-  weight,
-  directed,
-});
+export const createEdge = (from: NodeId, to: NodeId, weight = 1, directed = false): EdgeModel => {
+  if (typeof weight !== 'number' || isNaN(weight) || !isFinite(weight) || weight < 0) {
+    throw new Error(`Invalid edge weight: ${weight}. Weight must be a non-negative finite number.`);
+  }
+
+  return {
+    id: `e-${from}-${to}-${Date.now()}`,
+    from,
+    to,
+    weight,
+    directed,
+  };
+};
 
 export const getNeighbors = (graph: GraphModel, nodeId: string): string[] => {
   const neighbors = graph.edges
