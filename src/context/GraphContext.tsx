@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import { GraphModel, NodeModel, EdgeModel, createNode, createEdge } from '@/models/graph';
 import { Step } from '@/models/step';
+import { isValidWeight } from '@/lib/validation';
 
 export type InteractionMode = 'select' | 'add-node' | 'add-edge' | 'delete';
 
@@ -13,6 +14,7 @@ interface GraphContextType {
   addEdge: (from: string, to: string, weight?: number) => void;
   removeEdge: (id: string) => void;
   updateEdge: (id: string, updates: Partial<EdgeModel>) => void;
+  updateEdgeWeight: (edgeId: string, weight: number) => Promise<boolean>;
   clearGraph: () => void;
   
   mode: InteractionMode;
@@ -129,6 +131,24 @@ export const GraphProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }));
   }, []);
 
+  const updateEdgeWeight = useCallback(async (edgeId: string, weight: number): Promise<boolean> => {
+    if (!isValidWeight(weight)) {
+      return false;
+    }
+
+    const edgeExists = graph.edges.some(e => e.id === edgeId);
+    if (!edgeExists) {
+      return false;
+    }
+
+    setGraph(prev => ({
+      ...prev,
+      edges: prev.edges.map(e => e.id === edgeId ? { ...e, weight } : e),
+    }));
+
+    return true;
+  }, [graph.edges]);
+
   const clearGraph = useCallback(() => {
     setGraph({ nodes: [], edges: [], directed: false });
     setSelectedNode(null);
@@ -147,6 +167,7 @@ export const GraphProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       addEdge,
       removeEdge,
       updateEdge,
+      updateEdgeWeight,
       clearGraph,
       mode,
       setMode,

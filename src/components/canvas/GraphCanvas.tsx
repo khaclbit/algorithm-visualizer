@@ -11,6 +11,7 @@ export const GraphCanvas: React.FC = () => {
     removeNode,
     addEdge,
     removeEdge,
+    updateEdgeWeight,
     mode,
     selectedNode,
     setSelectedNode,
@@ -173,6 +174,8 @@ export const GraphCanvas: React.FC = () => {
           nodes={graph.nodes}
           isHighlighted={isEdgeHighlighted(edge.from, edge.to)}
           onClick={() => handleEdgeClick(edge.id)}
+          onWeightChange={updateEdgeWeight}
+          mode={mode}
         />
       ))}
 
