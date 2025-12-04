@@ -9,7 +9,7 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
-    allowedHosts: ["khaclbit.github.io/algorithm-visualizer"],
+    allowedHosts: ["khaclbit.github.io"],
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(
     Boolean,
