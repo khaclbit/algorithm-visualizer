@@ -46,7 +46,9 @@ export function floydWarshall(graph: GraphModel): Step[] {
         fwNodes: [...nodes],
         comment: `Considering paths through node ${nodes[k]} (k=${k})` 
       },
-      highlightNodes: [nodes[k]],
+      highlightNodes: {
+        intermediary: [nodes[k]]
+      },
     }));
 
     for (let i = 0; i < n; i++) {
@@ -58,14 +60,18 @@ export function floydWarshall(graph: GraphModel): Step[] {
         if (throughK < dist[i][j]) {
           dist[i][j] = throughK;
           
-          steps.push(createStep('matrix-update', {
-            state: { 
-              fwMatrix: copyMatrix(dist),
-              fwNodes: [...nodes],
-              comment: `dist[${nodes[i]}][${nodes[j]}] = ${throughK} (via ${nodes[k]})` 
-            },
-            highlightNodes: [nodes[i], nodes[j], nodes[k]],
-          }));
+           steps.push(createStep('matrix-update', {
+             state: { 
+               fwMatrix: copyMatrix(dist),
+               fwNodes: [...nodes],
+               comment: `dist[${nodes[i]}][${nodes[j]}] = ${throughK} (via ${nodes[k]})` 
+             },
+             highlightNodes: {
+               intermediary: [nodes[k]],
+               source: [nodes[i]],
+               destination: [nodes[j]]
+             },
+           }));
         }
       }
     }

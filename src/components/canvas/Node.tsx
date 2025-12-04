@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 
 interface NodeProps {
   node: NodeModel;
-  state: 'default' | 'current' | 'visited' | 'queued' | 'start';
+  state: 'default' | 'current' | 'visited' | 'queued' | 'start' | 'fw-intermediary' | 'fw-source' | 'fw-destination';
   isSelected: boolean;
   isEdgeStart: boolean;
   isStartNode: boolean;
@@ -29,6 +29,9 @@ export const Node: React.FC<NodeProps> = ({
       case 'visited': return 'graph-node-visited';
       case 'queued': return 'graph-node-queued';
       case 'start': return 'graph-node-start';
+      case 'fw-intermediary': return 'graph-node-fw-intermediary';
+      case 'fw-source': return 'graph-node-fw-source';
+      case 'fw-destination': return 'graph-node-fw-destination';
       default: return 'graph-node-default';
     }
   };
