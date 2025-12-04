@@ -1,14 +1,33 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+/* #root { */
+/*   max-width: 1280px; */
+/*   margin: 0 auto; */
+/*   padding: 2rem; */
+/*   text-align: center; */
+/* } */
+/**/
+/* .card { */
+/*   padding: 2em; */
+/* } */
+/**/
+/* .read-the-docs { */
+/*   color: #888; */
+/* } */
+
+/* Floyd-Warshall visualization colors */
+.graph-node-fw-intermediary {
+  fill: #8b5cf6; /* violet-500 */
+  stroke: #a855f7; /* violet-600 */
+  stroke-width: 3;
 }
 
-.card {
-  padding: 2em;
+.graph-node-fw-destination {
+  fill: #f97316; /* orange-500 */
+  stroke: #ea580c; /* orange-600 */
+  stroke-width: 3;
 }
 
-.read-the-docs {
-  color: #888;
+.graph-node-fw-source {
+  fill: #22c55e; /* gree-500 */
+  stroke: #16a34a; /* green-600 */
+  stroke-width: 3;
 }

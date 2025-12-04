@@ -110,7 +110,19 @@ export const GraphCanvas: React.FC = () => {
     if (!currentStep) return 'default';
     if (nodeId === startNode && currentStepIndex === 0) return 'start';
     if (currentStep.currentNode === nodeId) return 'current';
-    if (currentStep.highlightNodes?.includes(nodeId)) return 'queued';
+
+    // Handle structured highlighting (new format)
+    if (typeof currentStep.highlightNodes === 'object' && currentStep.highlightNodes !== null) {
+      const highlights = currentStep.highlightNodes as any; // Type assertion for now
+      if (highlights.intermediary?.includes(nodeId)) return 'fw-intermediary';
+      if (highlights.source?.includes(nodeId)) return 'fw-source';
+      if (highlights.destination?.includes(nodeId)) return 'fw-destination';
+      if (highlights.nodes?.includes(nodeId)) return 'queued';
+    }
+
+    // Handle legacy array format
+    if (Array.isArray(currentStep.highlightNodes) && currentStep.highlightNodes.includes(nodeId)) return 'queued';
+
     if (currentStep.visitedNodes?.includes(nodeId)) return 'visited';
     if (currentStep.queuedNodes?.includes(nodeId)) return 'queued';
     return 'default';
