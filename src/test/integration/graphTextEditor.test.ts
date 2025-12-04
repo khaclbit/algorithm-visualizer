@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { graphTextParser } from '@/lib/textParser';
 import { GraphModelTransformer } from '@/lib/graphModelTransformer';
+import { floydWarshall } from '@/algorithms/floydWarshall';
 
 describe('Graph Text Editor Integration', () => {
   it('should complete text-to-visual workflow', () => {
@@ -191,5 +192,106 @@ A C 3`;
     expect(transformTime).toBeLessThan(100);
     expect(graphModel.nodes).toHaveLength(51); // node1 to node51
     expect(graphModel.edges).toHaveLength(50);
+  });
+
+  it('should generate FW steps with structured highlighting', () => {
+    // Create a simple test graph
+    const testInput = `A B 1
+B C 2
+A C 4`;
+    const parseResult = graphTextParser.parseText(testInput);
+    
+    expect(parseResult.success).toBe(true);
+    if (!parseResult.graph) return;
+    
+    const graphModel = GraphModelTransformer.parsedGraphToModel(parseResult.graph);
+    
+    // Run FW algorithm
+    const steps = floydWarshall(graphModel);
+    
+    // Should have steps for initialization + k loops + final
+    expect(steps.length).toBeGreaterThan(3); // At least init, 3 k-loops, final
+    
+    // Check that steps have structured highlightNodes
+    const updateSteps = steps.filter(step => step.type === 'matrix-update');
+    expect(updateSteps.length).toBeGreaterThan(0);
+    
+    // Each update step should have structured highlighting
+    updateSteps.forEach(step => {
+      expect(step.highlightNodes).toBeDefined();
+      expect(typeof step.highlightNodes).toBe('object');
+      
+      const highlights = step.highlightNodes as any;
+      expect(highlights).toHaveProperty('intermediary');
+      expect(highlights).toHaveProperty('source');
+      expect(highlights).toHaveProperty('destination');
+      
+      // Should be arrays
+      expect(Array.isArray(highlights.intermediary)).toBe(true);
+      expect(Array.isArray(highlights.source)).toBe(true);
+      expect(Array.isArray(highlights.destination)).toBe(true);
+      
+      // Should have at least one node in each category
+      expect(highlights.intermediary.length).toBeGreaterThan(0);
+      expect(highlights.source.length).toBeGreaterThan(0);
+      expect(highlights.destination.length).toBeGreaterThan(0);
+    });
+    
+    // Check initialization step
+    const initStep = steps.find(step => step.state?.comment?.includes('Initialized'));
+    expect(initStep).toBeDefined();
+    expect(initStep?.highlightNodes).toBeUndefined(); // No highlighting for init
+    
+    // Check k-consideration steps
+    const kSteps = steps.filter(step => step.state?.comment?.includes('Considering paths through'));
+    expect(kSteps.length).toBe(3); // For 3 nodes
+    
+    kSteps.forEach(step => {
+      expect(step.highlightNodes).toBeDefined();
+      const highlights = step.highlightNodes as any;
+      expect(highlights.intermediary).toHaveLength(1); // Only k node highlighted
+      expect(highlights.source).toBeUndefined();
+      expect(highlights.destination).toBeUndefined();
+    });
+  });
+
+  it('should produce correct FW distance matrix', () => {
+    // Test graph: A-B:1, B-C:2, A-C:4
+    // Expected shortest paths: A-B:1, B-C:2, A-C:3 (via B)
+    const testInput = `A B 1
+B C 2
+A C 4`;
+    const parseResult = graphTextParser.parseText(testInput);
+    
+    expect(parseResult.success).toBe(true);
+    if (!parseResult.graph) return;
+    
+    const graphModel = GraphModelTransformer.parsedGraphToModel(parseResult.graph);
+    const steps = floydWarshall(graphModel);
+    
+    // Find the final step
+    const finalStep = steps[steps.length - 1];
+    expect(finalStep.state?.comment).toContain('Floyd-Warshall complete');
+    
+    const finalMatrix = finalStep.state?.fwMatrix;
+    expect(finalMatrix).toBeDefined();
+    
+    // Verify distances
+    const nodeIndex: Record<string, number> = {};
+    ['A', 'B', 'C'].forEach((id, i) => nodeIndex[id] = i);
+    
+    // A to B: 1 (direct)
+    expect(finalMatrix[nodeIndex['A']][nodeIndex['B']]).toBe(1);
+    // B to C: 2 (direct)
+    expect(finalMatrix[nodeIndex['B']][nodeIndex['C']]).toBe(2);
+    // A to C: 3 (via B: 1+2)
+    expect(finalMatrix[nodeIndex['A']][nodeIndex['C']]).toBe(3);
+    // C to A: 3 (via B)
+    expect(finalMatrix[nodeIndex['C']][nodeIndex['A']]).toBe(3);
+    
+    // Self distances should be 0
+    expect(finalMatrix[nodeIndex['A']][nodeIndex['A']]).toBe(0);
+    expect(finalMatrix[nodeIndex['B']][nodeIndex['B']]).toBe(0);
+    expect(finalMatrix[nodeIndex['C']][nodeIndex['C']]).toBe(0);
   });
 });

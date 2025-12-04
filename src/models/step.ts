@@ -22,10 +22,17 @@ export interface AlgorithmState {
   comment?: string;
 }
 
+export interface HighlightNodes {
+  nodes?: string[];
+  intermediary?: string[];
+  source?: string[];
+  destination?: string[];
+}
+
 export interface Step {
   id: string;
   type: StepType;
-  highlightNodes?: string[];
+  highlightNodes?: string[] | HighlightNodes;
   highlightEdges?: EdgePointer[];
   visitedNodes?: string[];
   queuedNodes?: string[];
