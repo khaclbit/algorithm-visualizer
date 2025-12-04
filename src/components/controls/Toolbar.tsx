@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { MousePointer2, Circle, GitBranch, Trash2, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const tools: { mode: InteractionMode; icon: React.ReactNode; label: string; shortcut: string }[] = [
   { mode: 'select', icon: <MousePointer2 className="h-4 w-4" />, label: 'Select & Move', shortcut: 'V' },
@@ -18,9 +19,13 @@ interface ToolbarProps {
 
 export const Toolbar: React.FC<ToolbarProps> = ({ onTextEditorOpen }) => {
   const { mode, setMode, isRunning } = useGraph();
+  const isMobile = useIsMobile();
 
   return (
-    <div className="flex flex-col gap-1 p-2 panel">
+    <div className={cn(
+      "flex gap-1 p-2 panel",
+      isMobile ? "flex-row justify-center" : "flex-col"
+    )}>
       {tools.map(tool => (
         <Tooltip key={tool.mode}>
           <TooltipTrigger asChild>
@@ -30,19 +35,21 @@ export const Toolbar: React.FC<ToolbarProps> = ({ onTextEditorOpen }) => {
               onClick={() => setMode(tool.mode)}
               disabled={isRunning}
               className={cn(
-                'h-10 w-10',
+                'h-9 w-9 md:h-10 md:w-10',
                 mode === tool.mode && 'bg-primary text-primary-foreground'
               )}
             >
               {tool.icon}
             </Button>
           </TooltipTrigger>
-          <TooltipContent side="right">
-            <p>{tool.label} ({tool.shortcut})</p>
+          <TooltipContent side={isMobile ? "bottom" : "right"}>
+            <p>{tool.label} {!isMobile && `(${tool.shortcut})`}</p>
           </TooltipContent>
         </Tooltip>
       ))}
-      <div className="border-t pt-1 mt-1">
+      <div className={cn(
+        isMobile ? "border-l pl-1 ml-1" : "border-t pt-1 mt-1"
+      )}>
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
@@ -50,12 +57,12 @@ export const Toolbar: React.FC<ToolbarProps> = ({ onTextEditorOpen }) => {
               size="icon"
               onClick={onTextEditorOpen}
               disabled={isRunning}
-              className="h-10 w-10"
+              className="h-9 w-9 md:h-10 md:w-10"
             >
               <FileText className="h-4 w-4" />
             </Button>
           </TooltipTrigger>
-          <TooltipContent side="right">
+          <TooltipContent side={isMobile ? "bottom" : "right"}>
             <p>Open Text Editor</p>
           </TooltipContent>
         </Tooltip>
