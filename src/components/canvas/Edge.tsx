@@ -62,19 +62,14 @@ export const Edge: React.FC<EdgeProps> = ({
     }
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     const newWeight = parseFloat(editValue);
     if (!isNaN(newWeight) && newWeight >= 0 && isFinite(newWeight)) {
-      const success = await onWeightChange?.(edge.id, newWeight);
-      if (success) {
-        setIsEditing(false);
-        setHasError(false);
-      } else {
-        setHasError(true);
-      }
+      onWeightChange?.(edge.id, newWeight);
+      setIsEditing(false);
+      setHasError(false);
     } else {
       setHasError(true);
-      // Keep editing mode to allow correction
     }
   };
 

@@ -8,6 +8,11 @@ import { StatePanel } from '@/components/panels/StatePanel';
 import { JsonImportExport } from '@/components/controls/JsonImportExport';
 import { TextEditorModal } from '@/components/controls/TextEditorModal';
 import { Separator } from '@/components/ui/separator';
+import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizableHandle,
+} from '@/components/ui/resizable';
 
 const Index: React.FC = () => {
   const [isTextEditorOpen, setIsTextEditorOpen] = useState(false);
@@ -43,28 +48,58 @@ const Index: React.FC = () => {
           <JsonImportExport />
         </header>
 
-        {/* Main content */}
+        {/* Main content with resizable panels */}
         <div className="flex-1 flex overflow-hidden">
           {/* Left toolbar */}
           <div className="p-3">
             <Toolbar onTextEditorOpen={() => setIsTextEditorOpen(true)} />
           </div>
 
-          {/* Canvas area */}
-          <div className="flex-1 p-3">
-            <div className="h-full panel overflow-hidden">
-              <GraphCanvas />
-            </div>
-          </div>
+          {/* Resizable main area */}
+          <ResizablePanelGroup direction="horizontal" className="flex-1">
+            {/* Canvas area */}
+            <ResizablePanel defaultSize={75} minSize={40}>
+              <div className="h-full p-3">
+                <div className="h-full panel overflow-hidden">
+                  <GraphCanvas />
+                </div>
+              </div>
+            </ResizablePanel>
 
-          {/* Right sidebar */}
-          <div className="w-72 p-3 flex flex-col gap-3 overflow-y-auto">
-            <AlgorithmPanel />
-            <StepControls />
-            <div className="flex-1 min-h-0">
-              <StatePanel />
-            </div>
-          </div>
+            <ResizableHandle withHandle />
+
+            {/* Right sidebar */}
+            <ResizablePanel defaultSize={25} minSize={15} maxSize={50}>
+              <div className="h-full p-3 overflow-hidden">
+                <ResizablePanelGroup direction="vertical">
+                  {/* Algorithm Panel */}
+                  <ResizablePanel defaultSize={35} minSize={20}>
+                    <div className="h-full overflow-auto pb-2">
+                      <AlgorithmPanel />
+                    </div>
+                  </ResizablePanel>
+
+                  <ResizableHandle withHandle />
+
+                  {/* Step Controls */}
+                  <ResizablePanel defaultSize={30} minSize={15}>
+                    <div className="h-full overflow-auto py-2">
+                      <StepControls />
+                    </div>
+                  </ResizablePanel>
+
+                  <ResizableHandle withHandle />
+
+                  {/* State Panel */}
+                  <ResizablePanel defaultSize={35} minSize={20}>
+                    <div className="h-full overflow-auto pt-2">
+                      <StatePanel />
+                    </div>
+                  </ResizablePanel>
+                </ResizablePanelGroup>
+              </div>
+            </ResizablePanel>
+          </ResizablePanelGroup>
         </div>
 
         {/* Footer hint */}

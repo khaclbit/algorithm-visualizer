@@ -1,4 +1,4 @@
-import { Edge, Node } from '../models/graph';
+import { EdgeModel, NodeModel } from '../models/graph';
 
 /**
  * Calculates the perpendicular distance from a point to a line segment
@@ -30,15 +30,15 @@ export const pointToLineDistance = (
 export const findEdgeAtPosition = (
   x: number,
   y: number,
-  edges: Edge[],
-  nodes: Node[],
+  edges: EdgeModel[],
+  nodes: NodeModel[],
   tolerance: number = 5
-): Edge | undefined => {
+): EdgeModel | undefined => {
   const getNodeById = (id: string) => nodes.find(node => node.id === id);
 
   for (const edge of edges) {
-    const source = getNodeById(edge.sourceId);
-    const target = getNodeById(edge.targetId);
+    const source = getNodeById(edge.from);
+    const target = getNodeById(edge.to);
     if (!source || !target) continue;
 
     const distance = pointToLineDistance(x, y, source.x, source.y, target.x, target.y);
