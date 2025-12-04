@@ -97,7 +97,7 @@ export const AlgorithmPanel: React.FC = () => {
               disabled={isRunning}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select start node" />
+                <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 {graph.nodes.map(node => (

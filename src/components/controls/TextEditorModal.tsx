@@ -59,7 +59,6 @@ export function TextEditorModal({
               <Textarea
                 value={content}
                 onChange={(e) => handleContentChange(e.target.value)}
-                placeholder="Enter text here... // TODO: Add text processing logic for app input"
                 className="flex-1 resize-none"
               />
               <div className="flex justify-end gap-2">
