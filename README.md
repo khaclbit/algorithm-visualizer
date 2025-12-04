@@ -62,7 +62,31 @@ This project is built with:
 
 ## How can I deploy this project?
 
+### Option 1: Lovable Hosting (Recommended)
+
 Simply open [Lovable](https://lovable.dev/projects/34a14fa3-e45f-4054-ba7e-12b05a380b6f) and click on Share -> Publish.
+
+### Option 2: GitHub Pages
+
+This project is configured for deployment to GitHub Pages. To deploy:
+
+1. **Enable GitHub Pages**:
+   - Go to your repository Settings → Pages
+   - Under "Source", select "GitHub Actions"
+
+2. **Deploy automatically**:
+   - Push changes to the `main` branch
+   - GitHub Actions will automatically build and deploy
+   - Visit `https://yourusername.github.io/algorithm-visualizer` to see the deployed app
+
+3. **Local testing**:
+   ```sh
+   npm run build
+   npm run preview
+   ```
+   Test at `http://localhost:4173/algorithm-visualizer/`
+
+**Note**: The application uses client-side routing. Direct URL access and refresh work correctly due to SPA redirect handling.
 
 ## Can I connect a custom domain to my Lovable project?
 

@@ -16,12 +16,32 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@Lovable" />
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
-    
-    <link rel="canonical" href="https://lovable.dev/projects/34a14fa3-e45f-4054-ba7e-12b05a380b6f" />
   </head>
 
   <body>
     <div id="root"></div>
+    <script type="text/javascript">
+      // Single Page Apps for GitHub Pages
+      // MIT License
+      // https://github.com/rafgraph/spa-github-pages
+      // This script checks to see if a redirect is present in the query string,
+      // converts it back to the correct url and adds it to the
+      // browser's history using window.history.replaceState(...),
+      // which won't cause the browser to attempt to load the new url.
+      // When the single page app is loaded further down in this file,
+      // the correct url will be waiting in the browser's history for
+      // the single page app to route accordingly.
+      (function(l) {
+        if (l.search && l.search[1] === '/' ) {
+          var decoded = l.search.slice(1).split('&').map(function(s) {
+            return s.replace(/~and~/g, '&')
+          }).join('?');
+          var newPath = l.pathname.slice(0, -1) + decoded + l.hash;
+          console.log('SPA Redirect: from', l.href, 'to', newPath);
+          window.history.replaceState(null, null, newPath);
+        }
+      }(window.location))
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

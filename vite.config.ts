@@ -4,10 +4,11 @@ import path from "path";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  base: process.env.NODE_ENV === "production" ? "/algorithm-visualizer/" : "/",
   server: {
     host: "::",
     port: 8080,
-    allowedHosts: ["28c06b2c857a.ngrok-free.app"],
+    allowedHosts: ["khaclbit.github.io"],
   },
   plugins: [react()],
   resolve: {
