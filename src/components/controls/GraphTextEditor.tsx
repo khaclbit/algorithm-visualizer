@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -12,6 +12,7 @@ import { graphTextParser } from '@/lib/textParser';
 import { updateGraphModel } from '@/lib/graphModelTransformer';
 import { useGraph } from '@/context/GraphContext';
 import { ValidationError, ParseResult } from '@/types/graphText';
+import { loadGraphText, saveGraphText } from '@/lib/graphPersistence';
 
 interface GraphTextEditorProps {
   className?: string;
@@ -28,6 +29,15 @@ export const GraphTextEditor: React.FC<GraphTextEditorProps> = ({
   const [textContent, setTextContent] = useState('');
   const [parseResult, setParseResult] = useState<ParseResult | null>(null);
   const [isDebouncing, setIsDebouncing] = useState(false);
+
+  // Load persisted text on mount
+  useEffect(() => {
+    const persisted = loadGraphText();
+    if (persisted) {
+      setTextContent(persisted);
+      onContentChange?.(persisted);
+    }
+  }, []);
 
   // Debounced parsing
   const debouncedParse = useCallback(
@@ -58,6 +68,17 @@ export const GraphTextEditor: React.FC<GraphTextEditorProps> = ({
       debouncedParse(value);
     }
   }, [onContentChange, debouncedParse]);
+
+  // Auto-save text content
+  useEffect(() => {
+    if (!textContent.trim()) return;
+
+    const timer = setTimeout(() => {
+      saveGraphText(textContent);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [textContent]);
 
   // Apply parsed graph to context
   const applyToGraph = useCallback(() => {
