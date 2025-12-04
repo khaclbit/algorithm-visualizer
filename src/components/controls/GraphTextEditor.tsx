@@ -17,13 +17,11 @@ import { loadGraphText, saveGraphText } from '@/lib/graphPersistence';
 interface GraphTextEditorProps {
   className?: string;
   onContentChange?: (content: string) => void;
-  placeholder?: string;
 }
 
 export const GraphTextEditor: React.FC<GraphTextEditorProps> = ({
   className,
-  onContentChange,
-  placeholder = "Enter graph in format:\nA B 5\nB C 3\nC A 2"
+  onContentChange
 }) => {
   const { graph, setGraph } = useGraph();
   const [textContent, setTextContent] = useState('');
@@ -171,7 +169,6 @@ export const GraphTextEditor: React.FC<GraphTextEditorProps> = ({
       <Textarea
         value={textContent}
         onChange={(e) => handleTextChange(e.target.value)}
-        placeholder={placeholder}
         className={cn(
           'min-h-[200px] font-mono text-sm',
           validationStatus === 'error' && 'border-red-300 focus:border-red-500',
