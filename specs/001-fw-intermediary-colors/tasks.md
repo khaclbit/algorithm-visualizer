@@ -50,12 +50,9 @@ US1: Enhanced FW Visualization
 - [ ] T008 [P] [US1] Update FW step creation to use structured highlighting in src/algorithms/floydWarshall.ts
 - [ ] T009 [P] [US1] Extend Node component with fw-intermediary, fw-source, fw-destination states in src/components/canvas/Node.tsx
 - [ ] T010 [P] [US1] Update GraphCanvas to handle structured highlighting in src/components/canvas/GraphCanvas.tsx
-- [ ] T011 [US1] Implement color application logic for FW steps in src/components/canvas/GraphCanvas.tsx
-- [ ] T012 [US1] Test FW visualization with sample graph data
-
-## Phase 4: Polish & Cross-Cutting Concerns
-
-- [ ] T013 Verify FW algorithm correctness after modifications
-- [ ] T014 Test color accessibility and contrast ratios
-- [ ] T015 Performance test visualization updates
-- [ ] T016 Update documentation for new visualization feature
+- [x] T011 [US1] Implement color application logic for FW steps in src/components/canvas/GraphCanvas.tsx
+- [x] T012 [US1] Test FW visualization with sample graph data
+- [x] T013 Verify FW algorithm correctness after modifications
+- [x] T014 Test color accessibility and contrast ratios
+- [x] T015 Performance test visualization updates
+- [x] T016 Update documentation for new visualization feature
