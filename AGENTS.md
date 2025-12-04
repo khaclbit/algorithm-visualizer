@@ -3,6 +3,8 @@
 Auto-generated from all feature plans. Last updated: 2025-12-04
 
 ## Active Technologies
+- TypeScript 5.8.3 with React 18.3.1 + Vite, React Router (if used), Tailwind CSS (001-deploy-github-pages)
+- N/A (static application) (001-deploy-github-pages)
 
 - TypeScript 5.8.3 with React 18.3.1 + React, Vite, ShadcN/UI (Radix components), Tailwind CSS (001-graph-text-editor)
 
@@ -22,6 +24,7 @@ npm test && npm run lint
 TypeScript 5.8.3 with React 18.3.1: Follow standard conventions
 
 ## Recent Changes
+- 001-deploy-github-pages: Added TypeScript 5.8.3 with React 18.3.1 + Vite, React Router (if used), Tailwind CSS
 
 - 001-graph-text-editor: Added TypeScript 5.8.3 with React 18.3.1 + React, Vite, ShadcN/UI (Radix components), Tailwind CSS
 
