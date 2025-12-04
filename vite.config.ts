@@ -5,11 +5,11 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  base: process.env.NODE_ENV === 'production' ? '/algorithm-visualizer/' : '/',
+  base: process.env.NODE_ENV === "production" ? "/algorithm-visualizer/" : "/",
   server: {
     host: "::",
     port: 8080,
-    allowedHosts: ["khaclbit.github.io"],
+    allowedHosts: ["khaclbit.github.io/algorithm-visualizer"],
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(
     Boolean,
