@@ -41,6 +41,7 @@
     --node-current: 185 70% 50%;
     --node-visited: 145 60% 45%;
     --node-queued: 45 95% 55%;
+    --node-rejected: 0 70% 55%;
     --node-start: 280 70% 60%;
     
     --edge-default: 220 15% 35%;
@@ -103,6 +104,13 @@
     stroke: hsl(var(--node-queued));
     stroke-width: 2;
     filter: drop-shadow(0 0 6px hsl(var(--node-queued) / 0.5));
+  }
+
+  .graph-node-rejected {
+    fill: hsl(var(--node-rejected));
+    stroke: hsl(var(--node-rejected));
+    stroke-width: 2;
+    filter: drop-shadow(0 0 6px hsl(var(--node-rejected) / 0.5));
   }
 
   .graph-node-start {

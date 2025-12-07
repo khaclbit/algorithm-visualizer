@@ -80,6 +80,21 @@ export function bfs(graph: GraphModel, startNode: string): Step[] {
           visitedEdges: [...visitedEdges],
           queuedNodes: [...queue],
         }));
+      } else {
+        // Node already visited - show rejection
+        steps.push(createStep('custom', {
+          state: { 
+            queue: [...queue], 
+            distances: { ...distances },
+            comment: `Node ${neighbor} already visited, skipping` 
+          },
+          currentNode: current,
+          highlightEdges: [{ from: current, to: neighbor }],
+          visitedNodes: Array.from(visited),
+          visitedEdges: [...visitedEdges],
+          queuedNodes: [...queue],
+          rejectedNodes: [neighbor],
+        }));
       }
     }
   }

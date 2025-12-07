@@ -87,6 +87,20 @@ export function dfs(graph: GraphModel, startNode: string): Step[] {
           visitedEdges: [...visitedEdges],
           queuedNodes: [...stack],
         }));
+      } else {
+        // Node already visited - show rejection
+        steps.push(createStep('custom', {
+          state: { 
+            stack: [...stack],
+            comment: `Node ${neighbor} already visited, skipping` 
+          },
+          currentNode: current,
+          highlightEdges: [{ from: current, to: neighbor }],
+          visitedNodes: Array.from(visited),
+          visitedEdges: [...visitedEdges],
+          queuedNodes: [...stack],
+          rejectedNodes: [neighbor],
+        }));
       }
     }
   }

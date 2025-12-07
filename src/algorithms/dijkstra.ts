@@ -58,8 +58,6 @@ export function dijkstra(graph: GraphModel, startNode: string): Step[] {
       }));
 
     for (const { node: neighbor, weight } of neighbors) {
-      if (visited.has(neighbor)) continue;
-
       steps.push(createStep('inspect-edge', {
         state: { 
           distances: { ...distances },
@@ -71,6 +69,23 @@ export function dijkstra(graph: GraphModel, startNode: string): Step[] {
         visitedEdges: [...visitedEdges],
         queuedNodes: [...queue],
       }));
+
+      if (visited.has(neighbor)) {
+        // Node already processed - show rejection
+        steps.push(createStep('custom', {
+          state: { 
+            distances: { ...distances },
+            comment: `Node ${neighbor} already processed, skipping` 
+          },
+          currentNode: current,
+          highlightEdges: [{ from: current, to: neighbor }],
+          visitedNodes: Array.from(visited),
+          visitedEdges: [...visitedEdges],
+          queuedNodes: [...queue],
+          rejectedNodes: [neighbor],
+        }));
+        continue;
+      }
 
       const newDist = distances[current] + weight;
       
