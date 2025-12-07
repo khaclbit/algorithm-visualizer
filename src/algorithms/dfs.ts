@@ -1,9 +1,10 @@
 import { GraphModel, getNeighbors } from '@/models/graph';
-import { Step, createStep } from '@/models/step';
+import { Step, createStep, EdgePointer } from '@/models/step';
 
 export function dfs(graph: GraphModel, startNode: string): Step[] {
   const steps: Step[] = [];
   const visited = new Set<string>();
+  const visitedEdges: EdgePointer[] = [];
   const stack: string[] = [];
   const predecessors: Record<string, string | null> = {};
 
@@ -18,6 +19,7 @@ export function dfs(graph: GraphModel, startNode: string): Step[] {
     },
     currentNode: startNode,
     visitedNodes: [],
+    visitedEdges: [],
     queuedNodes: [startNode],
   }));
 
@@ -31,6 +33,7 @@ export function dfs(graph: GraphModel, startNode: string): Step[] {
           comment: `Node ${current} already visited, skipping` 
         },
         visitedNodes: Array.from(visited),
+        visitedEdges: [...visitedEdges],
         queuedNodes: [...stack],
       }));
       continue;
@@ -45,6 +48,7 @@ export function dfs(graph: GraphModel, startNode: string): Step[] {
       },
       currentNode: current,
       visitedNodes: Array.from(visited),
+      visitedEdges: [...visitedEdges],
       queuedNodes: [...stack],
     }));
 
@@ -59,6 +63,7 @@ export function dfs(graph: GraphModel, startNode: string): Step[] {
         currentNode: current,
         highlightEdges: [{ from: current, to: neighbor }],
         visitedNodes: Array.from(visited),
+        visitedEdges: [...visitedEdges],
         queuedNodes: [...stack],
       }));
 
@@ -67,6 +72,7 @@ export function dfs(graph: GraphModel, startNode: string): Step[] {
         if (!(neighbor in predecessors)) {
           predecessors[neighbor] = current;
         }
+        visitedEdges.push({ from: current, to: neighbor });
 
         steps.push(createStep('discover-node', {
           state: { 
@@ -78,6 +84,7 @@ export function dfs(graph: GraphModel, startNode: string): Step[] {
           highlightNodes: [neighbor],
           highlightEdges: [{ from: current, to: neighbor }],
           visitedNodes: Array.from(visited),
+          visitedEdges: [...visitedEdges],
           queuedNodes: [...stack],
         }));
       }
@@ -90,6 +97,7 @@ export function dfs(graph: GraphModel, startNode: string): Step[] {
       comment: 'DFS complete!' 
     },
     visitedNodes: Array.from(visited),
+    visitedEdges: [...visitedEdges],
     queuedNodes: [],
   }));
 

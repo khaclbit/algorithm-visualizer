@@ -1,11 +1,12 @@
 import { GraphModel, getEdgeBetween } from '@/models/graph';
-import { Step, createStep } from '@/models/step';
+import { Step, createStep, EdgePointer } from '@/models/step';
 
 export function dijkstra(graph: GraphModel, startNode: string): Step[] {
   const steps: Step[] = [];
   const distances: Record<string, number> = {};
   const predecessors: Record<string, string | null> = {};
   const visited = new Set<string>();
+  const visitedEdges: EdgePointer[] = [];
   const queue: string[] = [];
 
   // Initialize distances
@@ -23,6 +24,7 @@ export function dijkstra(graph: GraphModel, startNode: string): Step[] {
     },
     currentNode: startNode,
     visitedNodes: [],
+    visitedEdges: [],
     queuedNodes: [startNode],
   }));
 
@@ -43,6 +45,7 @@ export function dijkstra(graph: GraphModel, startNode: string): Step[] {
       },
       currentNode: current,
       visitedNodes: Array.from(visited),
+      visitedEdges: [...visitedEdges],
       queuedNodes: [...queue],
     }));
 
@@ -65,6 +68,7 @@ export function dijkstra(graph: GraphModel, startNode: string): Step[] {
         currentNode: current,
         highlightEdges: [{ from: current, to: neighbor }],
         visitedNodes: Array.from(visited),
+        visitedEdges: [...visitedEdges],
         queuedNodes: [...queue],
       }));
 
@@ -73,6 +77,7 @@ export function dijkstra(graph: GraphModel, startNode: string): Step[] {
       if (newDist < distances[neighbor]) {
         distances[neighbor] = newDist;
         predecessors[neighbor] = current;
+        visitedEdges.push({ from: current, to: neighbor });
         
         if (!queue.includes(neighbor)) {
           queue.push(neighbor);
@@ -88,6 +93,7 @@ export function dijkstra(graph: GraphModel, startNode: string): Step[] {
           highlightNodes: [neighbor],
           highlightEdges: [{ from: current, to: neighbor }],
           visitedNodes: Array.from(visited),
+          visitedEdges: [...visitedEdges],
           queuedNodes: [...queue],
         }));
       }
@@ -101,6 +107,7 @@ export function dijkstra(graph: GraphModel, startNode: string): Step[] {
       comment: 'Dijkstra complete!' 
     },
     visitedNodes: Array.from(visited),
+    visitedEdges: [...visitedEdges],
     queuedNodes: [],
   }));
 
