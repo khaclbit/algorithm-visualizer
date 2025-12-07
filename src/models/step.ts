@@ -37,6 +37,7 @@ export interface Step {
   visitedNodes?: string[];
   visitedEdges?: EdgePointer[];
   queuedNodes?: string[];
+  rejectedNodes?: string[];
   currentNode?: string;
   state?: AlgorithmState;
 }

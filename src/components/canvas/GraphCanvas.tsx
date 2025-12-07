@@ -111,6 +111,9 @@ export const GraphCanvas: React.FC = () => {
     if (nodeId === startNode && currentStepIndex === 0) return 'start';
     if (currentStep.currentNode === nodeId) return 'current';
 
+    // Check for rejected nodes (already visited)
+    if (currentStep.rejectedNodes?.includes(nodeId)) return 'rejected';
+
     // Handle structured highlighting (new format)
     if (typeof currentStep.highlightNodes === 'object' && currentStep.highlightNodes !== null) {
       const highlights = currentStep.highlightNodes as any; // Type assertion for now
