@@ -45,6 +45,7 @@
     
     --edge-default: 220 15% 35%;
     --edge-highlight: 185 70% 50%;
+    --edge-visited: 210 90% 55%;
     --edge-path: 145 60% 45%;
 
     /* Panel colors */
@@ -121,6 +122,11 @@
     stroke: hsl(var(--edge-highlight));
     stroke-width: 3;
     filter: drop-shadow(0 0 4px hsl(var(--edge-highlight) / 0.5));
+  }
+
+  .graph-edge-visited {
+    stroke: hsl(var(--edge-visited));
+    stroke-width: 2.5;
   }
 
   .graph-edge-path {

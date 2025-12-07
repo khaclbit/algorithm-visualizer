@@ -135,6 +135,13 @@ export const GraphCanvas: React.FC = () => {
     );
   };
 
+  const isEdgeVisited = (from: string, to: string) => {
+    if (!currentStep?.visitedEdges) return false;
+    return currentStep.visitedEdges.some(
+      e => (e.from === from && e.to === to) || (e.from === to && e.to === from)
+    );
+  };
+
   // Convert screen coordinates to SVG viewBox coordinates
   const getSvgCoords = useCallback((clientX: number, clientY: number) => {
     if (!svgRef.current) return { x: 0, y: 0 };
@@ -392,6 +399,19 @@ export const GraphCanvas: React.FC = () => {
               fill="hsl(var(--edge-highlight))"
             />
           </marker>
+          <marker
+            id="arrowhead-visited"
+            markerWidth="10"
+            markerHeight="7"
+            refX="10"
+            refY="3.5"
+            orient="auto"
+          >
+            <polygon
+              points="0 0, 10 3.5, 0 7"
+              fill="hsl(var(--edge-visited))"
+            />
+          </marker>
         </defs>
 
         {/* Edges */}
@@ -401,6 +421,7 @@ export const GraphCanvas: React.FC = () => {
             edge={edge}
             nodes={graph.nodes}
             isHighlighted={isEdgeHighlighted(edge.from, edge.to)}
+            isVisited={isEdgeVisited(edge.from, edge.to)}
             onClick={() => handleEdgeClick(edge.id)}
             onWeightChange={updateEdgeWeight}
             mode={mode}
