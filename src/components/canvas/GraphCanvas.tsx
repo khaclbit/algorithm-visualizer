@@ -31,7 +31,7 @@ export const GraphCanvas: React.FC = () => {
     startNode,
   } = useGraph();
 
-  const svgRef = useRef<SVGSVGElement>(null);
+  const svgRef = useGraph().canvasSvgRef;
   const containerRef = useRef<HTMLDivElement>(null);
   const [dragNode, setDragNode] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
