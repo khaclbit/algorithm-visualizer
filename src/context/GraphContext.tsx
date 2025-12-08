@@ -6,6 +6,8 @@ import { saveGraphState, loadGraphState } from '@/lib/graphPersistence';
 
 export type InteractionMode = 'select' | 'add-node' | 'add-edge' | 'delete';
 
+export type AlgorithmType = 'bfs' | 'dfs' | 'dijkstra' | 'floyd-warshall';
+
 interface GraphContextType {
   graph: GraphModel;
   setGraph: (graph: GraphModel) => void;
@@ -35,6 +37,10 @@ interface GraphContextType {
   
   startNode: string | null;
   setStartNode: (id: string | null) => void;
+
+  // Algorithm selection
+  selectedAlgorithm: AlgorithmType;
+  setSelectedAlgorithm: (algorithm: AlgorithmType) => void;
 
   // Direction toggle
   directed: boolean;
@@ -86,6 +92,7 @@ export const GraphProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [currentStepIndex, setCurrentStepIndex] = useState(-1);
   const [isRunning, setIsRunning] = useState(false);
   const [startNode, setStartNode] = useState<string | null>('A');
+  const [selectedAlgorithm, setSelectedAlgorithm] = useState<AlgorithmType>('bfs');
 
   // Save graph state to localStorage whenever it changes
   useEffect(() => {
@@ -244,6 +251,8 @@ export const GraphProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       directed: graph.directed ?? false,
       setDirected,
       toggleDirection,
+      selectedAlgorithm,
+      setSelectedAlgorithm,
     }}>
       {children}
     </GraphContext.Provider>

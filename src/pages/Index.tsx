@@ -5,6 +5,7 @@ import { Toolbar } from '@/components/controls/Toolbar';
 import { AlgorithmPanel } from '@/components/controls/AlgorithmPanel';
 import { StepControls } from '@/components/controls/StepControls';
 import { StatePanel } from '@/components/panels/StatePanel';
+import { PseudocodePanel } from '@/components/panels/PseudocodePanel';
 import { JsonImportExport } from '@/components/controls/JsonImportExport';
 import { TextEditorModal } from '@/components/controls/TextEditorModal';
 import { Separator } from '@/components/ui/separator';
@@ -108,14 +109,18 @@ const Index: React.FC = () => {
               <CollapsibleContent>
                 <div className="border-t border-border bg-card max-h-[50vh] overflow-hidden">
                   <Tabs defaultValue="algorithm" className="w-full">
-                    <TabsList className="w-full grid grid-cols-3 h-9">
+                    <TabsList className="w-full grid grid-cols-4 h-9">
                       <TabsTrigger value="algorithm" className="text-xs">Algorithm</TabsTrigger>
+                      <TabsTrigger value="code" className="text-xs">Code</TabsTrigger>
                       <TabsTrigger value="playback" className="text-xs">Playback</TabsTrigger>
                       <TabsTrigger value="state" className="text-xs">State</TabsTrigger>
                     </TabsList>
                     <div className="p-2 overflow-auto max-h-[calc(50vh-36px)]">
                       <TabsContent value="algorithm" className="mt-0">
                         <AlgorithmPanel />
+                      </TabsContent>
+                      <TabsContent value="code" className="mt-0">
+                        <PseudocodePanel />
                       </TabsContent>
                       <TabsContent value="playback" className="mt-0">
                         <StepControls />
@@ -139,8 +144,17 @@ const Index: React.FC = () => {
 
             {/* Resizable main area */}
             <ResizablePanelGroup direction="horizontal" className="flex-1">
+              {/* Pseudocode Panel - Left side */}
+              <ResizablePanel defaultSize={15} minSize={10} maxSize={25}>
+                <div className="h-full p-3 overflow-hidden">
+                  <PseudocodePanel />
+                </div>
+              </ResizablePanel>
+
+              <ResizableHandle withHandle />
+
               {/* Canvas area */}
-              <ResizablePanel defaultSize={75} minSize={40}>
+              <ResizablePanel defaultSize={55} minSize={30}>
                 <div className="h-full p-3">
                   <div className="h-full panel overflow-hidden">
                     <GraphCanvas />
@@ -151,7 +165,7 @@ const Index: React.FC = () => {
               <ResizableHandle withHandle />
 
               {/* Right sidebar */}
-              <ResizablePanel defaultSize={25} minSize={15} maxSize={50}>
+              <ResizablePanel defaultSize={30} minSize={15} maxSize={50}>
                 <div className="h-full p-3 overflow-hidden">
                   <ResizablePanelGroup direction="vertical">
                     {/* Algorithm Panel */}
