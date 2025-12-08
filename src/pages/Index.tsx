@@ -144,17 +144,8 @@ const Index: React.FC = () => {
 
             {/* Resizable main area */}
             <ResizablePanelGroup direction="horizontal" className="flex-1">
-              {/* Pseudocode Panel - Left side */}
-              <ResizablePanel defaultSize={15} minSize={10} maxSize={25}>
-                <div className="h-full p-3 overflow-hidden">
-                  <PseudocodePanel />
-                </div>
-              </ResizablePanel>
-
-              <ResizableHandle withHandle />
-
               {/* Canvas area */}
-              <ResizablePanel defaultSize={55} minSize={30}>
+              <ResizablePanel defaultSize={70} minSize={40}>
                 <div className="h-full p-3">
                   <div className="h-full panel overflow-hidden">
                     <GraphCanvas />
@@ -165,11 +156,11 @@ const Index: React.FC = () => {
               <ResizableHandle withHandle />
 
               {/* Right sidebar */}
-              <ResizablePanel defaultSize={30} minSize={15} maxSize={50}>
+              <ResizablePanel defaultSize={30} minSize={20} maxSize={50}>
                 <div className="h-full p-3 overflow-hidden">
                   <ResizablePanelGroup direction="vertical">
                     {/* Algorithm Panel */}
-                    <ResizablePanel defaultSize={35} minSize={20}>
+                    <ResizablePanel defaultSize={25} minSize={15}>
                       <div className="h-full overflow-auto pb-2">
                         <AlgorithmPanel />
                       </div>
@@ -178,7 +169,7 @@ const Index: React.FC = () => {
                     <ResizableHandle withHandle />
 
                     {/* Step Controls */}
-                    <ResizablePanel defaultSize={30} minSize={15}>
+                    <ResizablePanel defaultSize={20} minSize={10}>
                       <div className="h-full overflow-auto py-2">
                         <StepControls />
                       </div>
@@ -187,9 +178,18 @@ const Index: React.FC = () => {
                     <ResizableHandle withHandle />
 
                     {/* State Panel */}
-                    <ResizablePanel defaultSize={35} minSize={20}>
-                      <div className="h-full overflow-auto pt-2">
+                    <ResizablePanel defaultSize={25} minSize={15}>
+                      <div className="h-full overflow-auto py-2">
                         <StatePanel />
+                      </div>
+                    </ResizablePanel>
+
+                    <ResizableHandle withHandle />
+
+                    {/* Pseudocode Panel */}
+                    <ResizablePanel defaultSize={30} minSize={15}>
+                      <div className="h-full overflow-auto pt-2">
+                        <PseudocodePanel />
                       </div>
                     </ResizablePanel>
                   </ResizablePanelGroup>
