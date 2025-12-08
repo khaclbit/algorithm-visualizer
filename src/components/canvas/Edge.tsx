@@ -6,6 +6,7 @@ interface EdgeProps {
   edge: EdgeModel;
   nodes: NodeModel[];
   isHighlighted: boolean;
+  isVisited?: boolean;
   onClick: () => void;
   onWeightChange?: (edgeId: string, newWeight: number) => void;
   mode?: string;
@@ -15,6 +16,7 @@ export const Edge: React.FC<EdgeProps> = ({
   edge,
   nodes,
   isHighlighted,
+  isVisited = false,
   onClick,
   onWeightChange,
   mode = 'select',
@@ -43,8 +45,8 @@ export const Edge: React.FC<EdgeProps> = ({
   
   const startX = fromNode.x + nx * nodeRadius;
   const startY = fromNode.y + ny * nodeRadius;
-  const endX = toNode.x - nx * (nodeRadius + (edge.directed ? 10 : 0));
-  const endY = toNode.y - ny * (nodeRadius + (edge.directed ? 10 : 0));
+  const endX = toNode.x - nx * (nodeRadius + (edge.directed ? 6 : 0));
+  const endY = toNode.y - ny * (nodeRadius + (edge.directed ? 6 : 0));
 
   // Calculate midpoint for weight label
   const midX = (fromNode.x + toNode.x) / 2;
@@ -92,10 +94,11 @@ export const Edge: React.FC<EdgeProps> = ({
         y2={endY}
         className={cn(
           'graph-edge',
+          isVisited && !isHighlighted && 'graph-edge-visited',
           isHighlighted && 'graph-edge-highlight',
           isEditing && 'stroke-blue-500'
         )}
-        markerEnd={edge.directed ? (isHighlighted ? 'url(#arrowhead-highlight)' : 'url(#arrowhead)') : undefined}
+        markerEnd={edge.directed ? (isHighlighted ? 'url(#arrowhead-highlight)' : isVisited ? 'url(#arrowhead-visited)' : 'url(#arrowhead)') : undefined}
       />
       
       {/* Invisible wider hitbox for easier clicking */}

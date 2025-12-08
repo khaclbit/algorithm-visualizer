@@ -1,9 +1,12 @@
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
 import { GraphModel, NodeModel, EdgeModel, createNode, createEdge } from '@/models/graph';
 import { Step } from '@/models/step';
 import { isValidWeight } from '@/lib/validation';
+import { saveGraphState, loadGraphState } from '@/lib/graphPersistence';
 
 export type InteractionMode = 'select' | 'add-node' | 'add-edge' | 'delete';
+
+export type AlgorithmType = 'bfs' | 'dfs' | 'dijkstra' | 'floyd-warshall';
 
 interface GraphContextType {
   graph: GraphModel;
@@ -34,6 +37,15 @@ interface GraphContextType {
   
   startNode: string | null;
   setStartNode: (id: string | null) => void;
+
+  // Algorithm selection
+  selectedAlgorithm: AlgorithmType;
+  setSelectedAlgorithm: (algorithm: AlgorithmType) => void;
+
+  // Direction toggle
+  directed: boolean;
+  setDirected: (directed: boolean) => void;
+  toggleDirection: () => Promise<void>;
 }
 
 const GraphContext = createContext<GraphContextType | null>(null);
@@ -69,7 +81,10 @@ const defaultGraph: GraphModel = {
 };
 
 export const GraphProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [graph, setGraph] = useState<GraphModel>(defaultGraph);
+  const [graph, setGraph] = useState<GraphModel>(() => {
+    const saved = loadGraphState();
+    return saved || defaultGraph;
+  });
   const [mode, setMode] = useState<InteractionMode>('select');
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
   const [edgeStartNode, setEdgeStartNode] = useState<string | null>(null);
@@ -77,6 +92,12 @@ export const GraphProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [currentStepIndex, setCurrentStepIndex] = useState(-1);
   const [isRunning, setIsRunning] = useState(false);
   const [startNode, setStartNode] = useState<string | null>('A');
+  const [selectedAlgorithm, setSelectedAlgorithm] = useState<AlgorithmType>('bfs');
+
+  // Save graph state to localStorage whenever it changes
+  useEffect(() => {
+    saveGraphState(graph);
+  }, [graph]);
 
   const addNode = useCallback((x: number, y: number) => {
     const id = generateNodeId(graph.nodes);
@@ -162,6 +183,45 @@ export const GraphProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     setCurrentStepIndex(-1);
   }, []);
 
+  const setDirected = useCallback((directed: boolean) => {
+    setGraph(prev => ({ ...prev, directed }));
+  }, []);
+
+  const toggleDirection = useCallback(async () => {
+    const newDirected = !graph.directed;
+    
+    if (newDirected) {
+      // Undirected → Directed: All edges become directed
+      setGraph(prev => ({
+        ...prev,
+        directed: true,
+        edges: prev.edges.map(edge => ({ ...edge, directed: true }))
+      }));
+    } else {
+      // Directed → Undirected: Merge conflicting edges
+      const edgeMap = new Map<string, EdgeModel>();
+      
+      graph.edges.forEach(edge => {
+        const key = [edge.from, edge.to].sort().join('-');
+        if (!edgeMap.has(key)) {
+          edgeMap.set(key, { ...edge, directed: false });
+        }
+        // If conflict exists, keep the first edge encountered
+      });
+      
+      setGraph(prev => ({
+        ...prev,
+        directed: false,
+        edges: Array.from(edgeMap.values())
+      }));
+    }
+    
+    // Reset algorithm state when direction changes
+    setSteps([]);
+    setCurrentStepIndex(-1);
+    setIsRunning(false);
+  }, [graph.directed, graph.edges]);
+
   return (
     <GraphContext.Provider value={{
       graph,
@@ -188,6 +248,11 @@ export const GraphProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       setIsRunning,
       startNode,
       setStartNode,
+      directed: graph.directed ?? false,
+      setDirected,
+      toggleDirection,
+      selectedAlgorithm,
+      setSelectedAlgorithm,
     }}>
       {children}
     </GraphContext.Provider>

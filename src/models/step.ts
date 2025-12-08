@@ -35,7 +35,9 @@ export interface Step {
   highlightNodes?: string[] | HighlightNodes;
   highlightEdges?: EdgePointer[];
   visitedNodes?: string[];
+  visitedEdges?: EdgePointer[];
   queuedNodes?: string[];
+  rejectedNodes?: string[];
   currentNode?: string;
   state?: AlgorithmState;
 }

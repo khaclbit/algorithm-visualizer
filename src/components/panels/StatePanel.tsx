@@ -3,7 +3,7 @@ import { useGraph } from '@/context/GraphContext';
 import { cn } from '@/lib/utils';
 
 export const StatePanel: React.FC = () => {
-  const { steps, currentStepIndex, isRunning } = useGraph();
+  const { steps, currentStepIndex, isRunning, directed } = useGraph();
 
   const currentStep = currentStepIndex >= 0 ? steps[currentStepIndex] : null;
   const state = currentStep?.state;
@@ -116,7 +116,12 @@ export const StatePanel: React.FC = () => {
 
   return (
     <div className="panel h-full flex flex-col">
-      <div className="panel-header">Algorithm State</div>
+      <div className="panel-header flex items-center justify-between">
+        <span>Algorithm State</span>
+        <span className="text-xs text-muted-foreground">
+          {directed ? 'Directed' : 'Undirected'}
+        </span>
+      </div>
       <div className="p-4 space-y-4 flex-1 overflow-y-auto">
         {/* Comment/Message */}
         {state?.comment && (

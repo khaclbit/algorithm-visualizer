@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
-import { GraphProvider } from '@/context/GraphContext';
+import React, { useState, useEffect } from 'react';
+import { GraphProvider, useGraph } from '@/context/GraphContext';
 import { GraphCanvas } from '@/components/canvas/GraphCanvas';
 import { Toolbar } from '@/components/controls/Toolbar';
 import { AlgorithmPanel } from '@/components/controls/AlgorithmPanel';
 import { StepControls } from '@/components/controls/StepControls';
 import { StatePanel } from '@/components/panels/StatePanel';
+import { PseudocodePanel } from '@/components/panels/PseudocodePanel';
 import { JsonImportExport } from '@/components/controls/JsonImportExport';
 import { TextEditorModal } from '@/components/controls/TextEditorModal';
 import { Separator } from '@/components/ui/separator';
@@ -29,8 +30,28 @@ const Index: React.FC = () => {
   const isMobile = useIsMobile();
   const [isPanelOpen, setIsPanelOpen] = useState(true);
 
+  // Keyboard shortcuts component
+  const KeyboardShortcuts: React.FC = () => {
+    const { toggleDirection, isRunning } = useGraph();
+
+    useEffect(() => {
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.ctrlKey && e.key === 'd' && !isRunning) {
+          e.preventDefault();
+          toggleDirection();
+        }
+      };
+
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [toggleDirection, isRunning]);
+
+    return null;
+  };
+
   return (
     <GraphProvider>
+      <KeyboardShortcuts />
       <div className="h-screen flex flex-col bg-background overflow-hidden">
         {/* Header */}
         <header className="flex items-center justify-between px-3 md:px-4 py-2 md:py-3 border-b border-border bg-card">
@@ -88,14 +109,18 @@ const Index: React.FC = () => {
               <CollapsibleContent>
                 <div className="border-t border-border bg-card max-h-[50vh] overflow-hidden">
                   <Tabs defaultValue="algorithm" className="w-full">
-                    <TabsList className="w-full grid grid-cols-3 h-9">
+                    <TabsList className="w-full grid grid-cols-4 h-9">
                       <TabsTrigger value="algorithm" className="text-xs">Algorithm</TabsTrigger>
+                      <TabsTrigger value="code" className="text-xs">Code</TabsTrigger>
                       <TabsTrigger value="playback" className="text-xs">Playback</TabsTrigger>
                       <TabsTrigger value="state" className="text-xs">State</TabsTrigger>
                     </TabsList>
                     <div className="p-2 overflow-auto max-h-[calc(50vh-36px)]">
                       <TabsContent value="algorithm" className="mt-0">
                         <AlgorithmPanel />
+                      </TabsContent>
+                      <TabsContent value="code" className="mt-0">
+                        <PseudocodePanel />
                       </TabsContent>
                       <TabsContent value="playback" className="mt-0">
                         <StepControls />
@@ -120,7 +145,7 @@ const Index: React.FC = () => {
             {/* Resizable main area */}
             <ResizablePanelGroup direction="horizontal" className="flex-1">
               {/* Canvas area */}
-              <ResizablePanel defaultSize={75} minSize={40}>
+              <ResizablePanel defaultSize={70} minSize={40}>
                 <div className="h-full p-3">
                   <div className="h-full panel overflow-hidden">
                     <GraphCanvas />
@@ -131,11 +156,11 @@ const Index: React.FC = () => {
               <ResizableHandle withHandle />
 
               {/* Right sidebar */}
-              <ResizablePanel defaultSize={25} minSize={15} maxSize={50}>
+              <ResizablePanel defaultSize={30} minSize={20} maxSize={50}>
                 <div className="h-full p-3 overflow-hidden">
                   <ResizablePanelGroup direction="vertical">
                     {/* Algorithm Panel */}
-                    <ResizablePanel defaultSize={35} minSize={20}>
+                    <ResizablePanel defaultSize={25} minSize={15}>
                       <div className="h-full overflow-auto pb-2">
                         <AlgorithmPanel />
                       </div>
@@ -144,7 +169,7 @@ const Index: React.FC = () => {
                     <ResizableHandle withHandle />
 
                     {/* Step Controls */}
-                    <ResizablePanel defaultSize={30} minSize={15}>
+                    <ResizablePanel defaultSize={20} minSize={10}>
                       <div className="h-full overflow-auto py-2">
                         <StepControls />
                       </div>
@@ -153,9 +178,18 @@ const Index: React.FC = () => {
                     <ResizableHandle withHandle />
 
                     {/* State Panel */}
-                    <ResizablePanel defaultSize={35} minSize={20}>
-                      <div className="h-full overflow-auto pt-2">
+                    <ResizablePanel defaultSize={25} minSize={15}>
+                      <div className="h-full overflow-auto py-2">
                         <StatePanel />
+                      </div>
+                    </ResizablePanel>
+
+                    <ResizableHandle withHandle />
+
+                    {/* Pseudocode Panel */}
+                    <ResizablePanel defaultSize={30} minSize={15}>
+                      <div className="h-full overflow-auto pt-2">
+                        <PseudocodePanel />
                       </div>
                     </ResizablePanel>
                   </ResizablePanelGroup>

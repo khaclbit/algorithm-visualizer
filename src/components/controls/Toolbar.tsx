@@ -5,6 +5,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { MousePointer2, Circle, GitBranch, Trash2, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { GraphDirectionToggle } from './GraphDirectionToggle';
 
 const tools: { mode: InteractionMode; icon: React.ReactNode; label: string; shortcut: string }[] = [
   { mode: 'select', icon: <MousePointer2 className="h-4 w-4" />, label: 'Select & Move', shortcut: 'V' },
@@ -47,6 +48,11 @@ export const Toolbar: React.FC<ToolbarProps> = ({ onTextEditorOpen }) => {
           </TooltipContent>
         </Tooltip>
       ))}
+      <div className={cn(
+        isMobile ? "border-l pl-1 ml-1" : "border-t pt-1 mt-1"
+      )}>
+        <GraphDirectionToggle />
+      </div>
       <div className={cn(
         isMobile ? "border-l pl-1 ml-1" : "border-t pt-1 mt-1"
       )}>

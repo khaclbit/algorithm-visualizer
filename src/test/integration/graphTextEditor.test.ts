@@ -28,7 +28,7 @@ C A 2`;
     // Verify transformation
     expect(graphModel.nodes).toHaveLength(3);
     expect(graphModel.edges).toHaveLength(3);
-    expect(graphModel.directed).toBe(false);
+    expect(graphModel.directed).toBe(true);
 
     // Verify nodes are created correctly
     const nodeIds = graphModel.nodes.map(n => n.id).sort();
@@ -286,8 +286,8 @@ A C 4`;
     expect(finalMatrix[nodeIndex['B']][nodeIndex['C']]).toBe(2);
     // A to C: 3 (via B: 1+2)
     expect(finalMatrix[nodeIndex['A']][nodeIndex['C']]).toBe(3);
-    // C to A: 3 (via B)
-    expect(finalMatrix[nodeIndex['C']][nodeIndex['A']]).toBe(3);
+    // C to A: Infinity (no path in directed graph)
+    expect(finalMatrix[nodeIndex['C']][nodeIndex['A']]).toBe(Infinity);
     
     // Self distances should be 0
     expect(finalMatrix[nodeIndex['A']][nodeIndex['A']]).toBe(0);

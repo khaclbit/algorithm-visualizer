@@ -1,9 +1,10 @@
 import { GraphModel, getNeighbors } from '@/models/graph';
-import { Step, createStep } from '@/models/step';
+import { Step, createStep, EdgePointer } from '@/models/step';
 
 export function bfs(graph: GraphModel, startNode: string): Step[] {
   const steps: Step[] = [];
   const visited = new Set<string>();
+  const visitedEdges: EdgePointer[] = [];
   const queue: string[] = [];
   const distances: Record<string, number> = {};
   const predecessors: Record<string, string | null> = {};
@@ -23,6 +24,7 @@ export function bfs(graph: GraphModel, startNode: string): Step[] {
     },
     currentNode: startNode,
     visitedNodes: [],
+    visitedEdges: [],
     queuedNodes: [startNode],
   }));
 
@@ -37,6 +39,7 @@ export function bfs(graph: GraphModel, startNode: string): Step[] {
       },
       currentNode: current,
       visitedNodes: Array.from(visited),
+      visitedEdges: [...visitedEdges],
       queuedNodes: [...queue],
     }));
 
@@ -52,6 +55,7 @@ export function bfs(graph: GraphModel, startNode: string): Step[] {
         currentNode: current,
         highlightEdges: [{ from: current, to: neighbor }],
         visitedNodes: Array.from(visited),
+        visitedEdges: [...visitedEdges],
         queuedNodes: [...queue],
       }));
 
@@ -60,6 +64,7 @@ export function bfs(graph: GraphModel, startNode: string): Step[] {
         queue.push(neighbor);
         distances[neighbor] = distances[current] + 1;
         predecessors[neighbor] = current;
+        visitedEdges.push({ from: current, to: neighbor });
 
         steps.push(createStep('discover-node', {
           state: { 
@@ -72,7 +77,23 @@ export function bfs(graph: GraphModel, startNode: string): Step[] {
           highlightNodes: [neighbor],
           highlightEdges: [{ from: current, to: neighbor }],
           visitedNodes: Array.from(visited),
+          visitedEdges: [...visitedEdges],
           queuedNodes: [...queue],
+        }));
+      } else {
+        // Node already visited - show rejection
+        steps.push(createStep('custom', {
+          state: { 
+            queue: [...queue], 
+            distances: { ...distances },
+            comment: `Node ${neighbor} already visited, skipping` 
+          },
+          currentNode: current,
+          highlightEdges: [{ from: current, to: neighbor }],
+          visitedNodes: Array.from(visited),
+          visitedEdges: [...visitedEdges],
+          queuedNodes: [...queue],
+          rejectedNodes: [neighbor],
         }));
       }
     }
@@ -85,6 +106,7 @@ export function bfs(graph: GraphModel, startNode: string): Step[] {
       comment: 'BFS complete!' 
     },
     visitedNodes: Array.from(visited),
+    visitedEdges: [...visitedEdges],
     queuedNodes: [],
   }));
 

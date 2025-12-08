@@ -111,6 +111,9 @@ export const GraphCanvas: React.FC = () => {
     if (nodeId === startNode && currentStepIndex === 0) return 'start';
     if (currentStep.currentNode === nodeId) return 'current';
 
+    // Check for rejected nodes (already visited)
+    if (currentStep.rejectedNodes?.includes(nodeId)) return 'rejected';
+
     // Handle structured highlighting (new format)
     if (typeof currentStep.highlightNodes === 'object' && currentStep.highlightNodes !== null) {
       const highlights = currentStep.highlightNodes as any; // Type assertion for now
@@ -131,6 +134,13 @@ export const GraphCanvas: React.FC = () => {
   const isEdgeHighlighted = (from: string, to: string) => {
     if (!currentStep?.highlightEdges) return false;
     return currentStep.highlightEdges.some(
+      e => (e.from === from && e.to === to) || (e.from === to && e.to === from)
+    );
+  };
+
+  const isEdgeVisited = (from: string, to: string) => {
+    if (!currentStep?.visitedEdges) return false;
+    return currentStep.visitedEdges.some(
       e => (e.from === from && e.to === to) || (e.from === to && e.to === from)
     );
   };
@@ -368,28 +378,41 @@ export const GraphCanvas: React.FC = () => {
         <defs>
           <marker
             id="arrowhead"
-            markerWidth="10"
-            markerHeight="7"
-            refX="10"
-            refY="3.5"
+            markerWidth="6"
+            markerHeight="4"
+            refX="6"
+            refY="2"
             orient="auto"
           >
             <polygon
-              points="0 0, 10 3.5, 0 7"
+              points="0 0, 6 2, 0 4"
               fill="hsl(var(--edge-default))"
             />
           </marker>
           <marker
             id="arrowhead-highlight"
-            markerWidth="10"
-            markerHeight="7"
-            refX="10"
-            refY="3.5"
+            markerWidth="6"
+            markerHeight="4"
+            refX="6"
+            refY="2"
             orient="auto"
           >
             <polygon
-              points="0 0, 10 3.5, 0 7"
+              points="0 0, 6 2, 0 4"
               fill="hsl(var(--edge-highlight))"
+            />
+          </marker>
+          <marker
+            id="arrowhead-visited"
+            markerWidth="6"
+            markerHeight="4"
+            refX="6"
+            refY="2"
+            orient="auto"
+          >
+            <polygon
+              points="0 0, 6 2, 0 4"
+              fill="hsl(var(--edge-visited))"
             />
           </marker>
         </defs>
@@ -401,6 +424,7 @@ export const GraphCanvas: React.FC = () => {
             edge={edge}
             nodes={graph.nodes}
             isHighlighted={isEdgeHighlighted(edge.from, edge.to)}
+            isVisited={isEdgeVisited(edge.from, edge.to)}
             onClick={() => handleEdgeClick(edge.id)}
             onWeightChange={updateEdgeWeight}
             mode={mode}

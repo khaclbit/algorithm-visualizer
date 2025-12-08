@@ -20,7 +20,7 @@ export class GraphModelTransformer {
     return {
       nodes,
       edges,
-      directed: false, // Our text format assumes undirected graphs
+      directed: edgeDefinitions.length > 0, // Directed if there are edges in text format
     };
   }
 
@@ -59,7 +59,7 @@ export class GraphModelTransformer {
           edgeDef.sourceVertex,
           edgeDef.targetVertex,
           edgeDef.weight,
-          false // Undirected
+          true // Directed - text format defines directed edges
         );
         edges.push(edge);
       } catch (error) {
@@ -96,7 +96,7 @@ export class GraphModelTransformer {
     return {
       nodes,
       edges,
-      directed: existingGraph.directed ?? false,
+      directed: edgeDefinitions.length > 0 ? true : (existingGraph.directed ?? false),
     };
   }
 

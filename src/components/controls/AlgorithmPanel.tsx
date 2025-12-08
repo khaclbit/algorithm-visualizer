@@ -1,5 +1,5 @@
 import React from 'react';
-import { useGraph } from '@/context/GraphContext';
+import { useGraph, AlgorithmType } from '@/context/GraphContext';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
@@ -8,8 +8,6 @@ import { bfs } from '@/algorithms/bfs';
 import { dfs } from '@/algorithms/dfs';
 import { dijkstra } from '@/algorithms/dijkstra';
 import { floydWarshall } from '@/algorithms/floydWarshall';
-
-type AlgorithmType = 'bfs' | 'dfs' | 'dijkstra' | 'floyd-warshall';
 
 const algorithms: { id: AlgorithmType; name: string; needsStart: boolean }[] = [
   { id: 'bfs', name: 'Breadth-First Search', needsStart: true },
@@ -27,9 +25,9 @@ export const AlgorithmPanel: React.FC = () => {
     setCurrentStepIndex,
     isRunning,
     setIsRunning,
+    selectedAlgorithm,
+    setSelectedAlgorithm,
   } = useGraph();
-
-  const [selectedAlgorithm, setSelectedAlgorithm] = React.useState<AlgorithmType>('bfs');
 
   const currentAlgo = algorithms.find(a => a.id === selectedAlgorithm)!;
 
