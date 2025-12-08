@@ -378,40 +378,40 @@ export const GraphCanvas: React.FC = () => {
         <defs>
           <marker
             id="arrowhead"
-            markerWidth="10"
-            markerHeight="7"
-            refX="10"
-            refY="3.5"
+            markerWidth="6"
+            markerHeight="4"
+            refX="6"
+            refY="2"
             orient="auto"
           >
             <polygon
-              points="0 0, 10 3.5, 0 7"
+              points="0 0, 6 2, 0 4"
               fill="hsl(var(--edge-default))"
             />
           </marker>
           <marker
             id="arrowhead-highlight"
-            markerWidth="10"
-            markerHeight="7"
-            refX="10"
-            refY="3.5"
+            markerWidth="6"
+            markerHeight="4"
+            refX="6"
+            refY="2"
             orient="auto"
           >
             <polygon
-              points="0 0, 10 3.5, 0 7"
+              points="0 0, 6 2, 0 4"
               fill="hsl(var(--edge-highlight))"
             />
           </marker>
           <marker
             id="arrowhead-visited"
-            markerWidth="10"
-            markerHeight="7"
-            refX="10"
-            refY="3.5"
+            markerWidth="6"
+            markerHeight="4"
+            refX="6"
+            refY="2"
             orient="auto"
           >
             <polygon
-              points="0 0, 10 3.5, 0 7"
+              points="0 0, 6 2, 0 4"
               fill="hsl(var(--edge-visited))"
             />
           </marker>

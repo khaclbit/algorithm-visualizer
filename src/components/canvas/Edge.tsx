@@ -45,8 +45,8 @@ export const Edge: React.FC<EdgeProps> = ({
   
   const startX = fromNode.x + nx * nodeRadius;
   const startY = fromNode.y + ny * nodeRadius;
-  const endX = toNode.x - nx * (nodeRadius + (edge.directed ? 10 : 0));
-  const endY = toNode.y - ny * (nodeRadius + (edge.directed ? 10 : 0));
+  const endX = toNode.x - nx * (nodeRadius + (edge.directed ? 6 : 0));
+  const endY = toNode.y - ny * (nodeRadius + (edge.directed ? 6 : 0));
 
   // Calculate midpoint for weight label
   const midX = (fromNode.x + toNode.x) / 2;

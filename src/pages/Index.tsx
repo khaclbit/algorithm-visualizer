@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { GraphProvider } from '@/context/GraphContext';
+import React, { useState, useEffect } from 'react';
+import { GraphProvider, useGraph } from '@/context/GraphContext';
 import { GraphCanvas } from '@/components/canvas/GraphCanvas';
 import { Toolbar } from '@/components/controls/Toolbar';
 import { AlgorithmPanel } from '@/components/controls/AlgorithmPanel';
@@ -29,8 +29,28 @@ const Index: React.FC = () => {
   const isMobile = useIsMobile();
   const [isPanelOpen, setIsPanelOpen] = useState(true);
 
+  // Keyboard shortcuts component
+  const KeyboardShortcuts: React.FC = () => {
+    const { toggleDirection, isRunning } = useGraph();
+
+    useEffect(() => {
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.ctrlKey && e.key === 'd' && !isRunning) {
+          e.preventDefault();
+          toggleDirection();
+        }
+      };
+
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [toggleDirection, isRunning]);
+
+    return null;
+  };
+
   return (
     <GraphProvider>
+      <KeyboardShortcuts />
       <div className="h-screen flex flex-col bg-background overflow-hidden">
         {/* Header */}
         <header className="flex items-center justify-between px-3 md:px-4 py-2 md:py-3 border-b border-border bg-card">
