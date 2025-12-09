@@ -1,9 +1,17 @@
 /**
  * Export SVG element to PNG image file
+ * Uses the current viewBox to capture exactly what's visible on the canvas
  */
 export const exportCanvasToPng = (svgElement: SVGSVGElement, filename: string = 'graph.png'): void => {
   // Clone the SVG to avoid modifying the original
   const svgClone = svgElement.cloneNode(true) as SVGSVGElement;
+  
+  // Get the current viewBox from the SVG (this represents the full canvas viewport)
+  const viewBoxAttr = svgElement.getAttribute('viewBox');
+  const viewBox = viewBoxAttr?.split(' ').map(Number) || [0, 0, 800, 600];
+  
+  // Ensure the clone has the same viewBox
+  svgClone.setAttribute('viewBox', `${viewBox[0]} ${viewBox[1]} ${viewBox[2]} ${viewBox[3]}`);
   
   // Get computed styles and inline them
   const computedStyle = getComputedStyle(document.documentElement);
@@ -47,9 +55,8 @@ export const exportCanvasToPng = (svgElement: SVGSVGElement, filename: string = 
   
   svgClone.insertBefore(styleElement, svgClone.firstChild);
   
-  // Add white background
+  // Add background rect covering the entire viewBox
   const bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-  const viewBox = svgClone.getAttribute('viewBox')?.split(' ').map(Number) || [0, 0, 800, 600];
   bgRect.setAttribute('x', String(viewBox[0]));
   bgRect.setAttribute('y', String(viewBox[1]));
   bgRect.setAttribute('width', String(viewBox[2]));
