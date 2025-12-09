@@ -1,12 +1,22 @@
 import { GraphModel, getEdgeBetween } from '@/models/graph';
 import { Step, createStep, EdgePointer } from '@/models/step';
 
+// Helper to compute current shortest path edges from predecessors map
+function getShortestPathEdges(predecessors: Record<string, string | null>): EdgePointer[] {
+  const edges: EdgePointer[] = [];
+  for (const [node, pred] of Object.entries(predecessors)) {
+    if (pred !== null) {
+      edges.push({ from: pred, to: node });
+    }
+  }
+  return edges;
+}
+
 export function dijkstra(graph: GraphModel, startNode: string): Step[] {
   const steps: Step[] = [];
   const distances: Record<string, number> = {};
   const predecessors: Record<string, string | null> = {};
   const visited = new Set<string>();
-  const visitedEdges: EdgePointer[] = [];
   const queue: string[] = [];
 
   // Initialize distances
@@ -41,11 +51,12 @@ export function dijkstra(graph: GraphModel, startNode: string): Step[] {
     steps.push(createStep('visit-node', {
       state: { 
         distances: { ...distances },
+        predecessors: { ...predecessors },
         comment: `Processing node ${current} (distance: ${distances[current]})` 
       },
       currentNode: current,
       visitedNodes: Array.from(visited),
-      visitedEdges: [...visitedEdges],
+      visitedEdges: getShortestPathEdges(predecessors),
       queuedNodes: [...queue],
     }));
 
@@ -61,12 +72,13 @@ export function dijkstra(graph: GraphModel, startNode: string): Step[] {
       steps.push(createStep('inspect-edge', {
         state: { 
           distances: { ...distances },
+          predecessors: { ...predecessors },
           comment: `Checking edge ${current} → ${neighbor} (weight: ${weight})` 
         },
         currentNode: current,
         highlightEdges: [{ from: current, to: neighbor }],
         visitedNodes: Array.from(visited),
-        visitedEdges: [...visitedEdges],
+        visitedEdges: getShortestPathEdges(predecessors),
         queuedNodes: [...queue],
       }));
 
@@ -75,12 +87,13 @@ export function dijkstra(graph: GraphModel, startNode: string): Step[] {
         steps.push(createStep('custom', {
           state: { 
             distances: { ...distances },
+            predecessors: { ...predecessors },
             comment: `Node ${neighbor} already processed, skipping` 
           },
           currentNode: current,
           highlightEdges: [{ from: current, to: neighbor }],
           visitedNodes: Array.from(visited),
-          visitedEdges: [...visitedEdges],
+          visitedEdges: getShortestPathEdges(predecessors),
           queuedNodes: [...queue],
           rejectedNodes: [neighbor],
         }));
@@ -90,25 +103,34 @@ export function dijkstra(graph: GraphModel, startNode: string): Step[] {
       const newDist = distances[current] + weight;
       
       if (newDist < distances[neighbor]) {
+        const oldPredecessor = predecessors[neighbor];
+        const hadPreviousPath = oldPredecessor !== null;
+        
+        // Update to the new shorter path
         distances[neighbor] = newDist;
         predecessors[neighbor] = current;
-        visitedEdges.push({ from: current, to: neighbor });
         
         if (!queue.includes(neighbor)) {
           queue.push(neighbor);
         }
 
+        // Create appropriate comment based on whether this is an update or first discovery
+        const comment = hadPreviousPath
+          ? `Found shorter path to ${neighbor}: ${newDist} (was via ${oldPredecessor}, now via ${current})`
+          : `Discovered path to ${neighbor}: ${newDist} (via ${current})`;
+
         steps.push(createStep('relax-edge', {
           state: { 
             distances: { ...distances },
             predecessors: { ...predecessors },
-            comment: `Updated distance to ${neighbor}: ${newDist}` 
+            comment
           },
           currentNode: current,
           highlightNodes: [neighbor],
           highlightEdges: [{ from: current, to: neighbor }],
           visitedNodes: Array.from(visited),
-          visitedEdges: [...visitedEdges],
+          // visitedEdges now reflects the updated shortest path tree
+          visitedEdges: getShortestPathEdges(predecessors),
           queuedNodes: [...queue],
         }));
       }
@@ -122,7 +144,7 @@ export function dijkstra(graph: GraphModel, startNode: string): Step[] {
       comment: 'Dijkstra complete!' 
     },
     visitedNodes: Array.from(visited),
-    visitedEdges: [...visitedEdges],
+    visitedEdges: getShortestPathEdges(predecessors),
     queuedNodes: [],
   }));
 
