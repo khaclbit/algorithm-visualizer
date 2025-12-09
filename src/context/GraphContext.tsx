@@ -4,6 +4,7 @@ import { Step } from '@/models/step';
 import { isValidWeight } from '@/lib/validation';
 import { saveGraphState, loadGraphState } from '@/lib/graphPersistence';
 import { exportCanvasToPng } from '@/lib/canvasExport';
+import { exportVisualizationToGif } from '@/lib/gifExport';
 
 export type InteractionMode = 'select' | 'add-node' | 'add-edge' | 'delete';
 
@@ -51,6 +52,9 @@ interface GraphContextType {
   // Canvas export
   canvasSvgRef: RefObject<SVGSVGElement>;
   exportCanvasAsImage: () => void;
+  exportAsGif: () => Promise<void>;
+  isExportingGif: boolean;
+  gifExportProgress: number;
 }
 
 const GraphContext = createContext<GraphContextType | null>(null);
@@ -99,12 +103,36 @@ export const GraphProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [startNode, setStartNode] = useState<string | null>('A');
   const [selectedAlgorithm, setSelectedAlgorithm] = useState<AlgorithmType>('bfs');
   const canvasSvgRef = useRef<SVGSVGElement>(null);
+  const [isExportingGif, setIsExportingGif] = useState(false);
+  const [gifExportProgress, setGifExportProgress] = useState(0);
 
   const exportCanvasAsImage = useCallback(() => {
     if (canvasSvgRef.current) {
       exportCanvasToPng(canvasSvgRef.current, 'graph.png');
     }
   }, []);
+
+  const exportAsGif = useCallback(async () => {
+    if (steps.length === 0) {
+      throw new Error('No algorithm steps to export. Please run an algorithm first.');
+    }
+    
+    setIsExportingGif(true);
+    setGifExportProgress(0);
+    
+    try {
+      await exportVisualizationToGif(
+        graph,
+        steps,
+        startNode,
+        { width: 800, height: 600, delay: 500 },
+        (progress) => setGifExportProgress(progress)
+      );
+    } finally {
+      setIsExportingGif(false);
+      setGifExportProgress(0);
+    }
+  }, [graph, steps, startNode]);
 
   // Save graph state to localStorage whenever it changes
   useEffect(() => {
@@ -267,6 +295,9 @@ export const GraphProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       setSelectedAlgorithm,
       canvasSvgRef,
       exportCanvasAsImage,
+      exportAsGif,
+      isExportingGif,
+      gifExportProgress,
     }}>
       {children}
     </GraphContext.Provider>
