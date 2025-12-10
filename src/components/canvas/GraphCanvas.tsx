@@ -1,4 +1,4 @@
-import React, { useRef, useState, useCallback, useEffect } from 'react';
+import React, { useRef, useState, useCallback, useEffect, useMemo } from 'react';
 import { useGraph } from '@/context/GraphContext';
 import { Node } from './Node';
 import { Edge } from './Edge';
@@ -9,6 +9,8 @@ import {
   isEdgeVisited as checkEdgeVisited, 
   getEdgeHighlightInfo 
 } from '@/lib/stepHelpers';
+import { reconstructFWPath } from '@/algorithms/floydWarshall';
+import { getPairColor } from '@/lib/pairColorHash';
 interface ViewBox {
   x: number;
   y: number;
@@ -33,6 +35,9 @@ export const GraphCanvas: React.FC = () => {
     steps,
     currentStepIndex,
     startNode,
+    selectedAlgorithm,
+    pathInspectionMode,
+    inspectedPath,
   } = useGraph();
 
   const svgRef = useGraph().canvasSvgRef;
@@ -110,6 +115,37 @@ export const GraphCanvas: React.FC = () => {
 
   const currentStep = currentStepIndex >= 0 ? steps[currentStepIndex] : null;
 
+  // Get final step for path inspection
+  const finalStep = steps.length > 0 ? steps[steps.length - 1] : null;
+
+  // Compute inspected path edges
+  const inspectedPathEdges = useMemo(() => {
+    if (!pathInspectionMode || !inspectedPath.from || !inspectedPath.to) return null;
+    if (!finalStep?.state?.fwNext || !finalStep?.state?.fwNodes) return null;
+
+    const path = reconstructFWPath(
+      finalStep.state.fwNext,
+      finalStep.state.fwNodes,
+      inspectedPath.from,
+      inspectedPath.to
+    );
+
+    if (path.length < 2) return null;
+
+    // Convert path to edge set for quick lookup
+    const edges = new Set<string>();
+    for (let i = 0; i < path.length - 1; i++) {
+      // Store both directions for undirected graph lookup
+      edges.add(`${path[i]}-${path[i + 1]}`);
+      edges.add(`${path[i + 1]}-${path[i]}`);
+    }
+
+    const color = getPairColor(inspectedPath.from, inspectedPath.to);
+    const pathNodes = new Set(path);
+
+    return { edges, color, pathNodes };
+  }, [pathInspectionMode, inspectedPath, finalStep]);
+
   const getNodeState = (nodeId: string) => {
     if (!currentStep) return 'default';
     if (nodeId === startNode && currentStepIndex === 0) return 'start';
@@ -144,7 +180,29 @@ export const GraphCanvas: React.FC = () => {
   };
 
   const getEdgeInfo = (from: string, to: string) => {
+    // Path inspection mode takes precedence
+    if (inspectedPathEdges) {
+      const key = `${from}-${to}`;
+      if (inspectedPathEdges.edges.has(key)) {
+        return {
+          isHighlighted: true,
+          isNewPath: true,
+          color: inspectedPathEdges.color
+        };
+      }
+    }
     return getEdgeHighlightInfo(currentStep, from, to);
+  };
+
+  const isEdgeDimmed = (from: string, to: string) => {
+    if (!inspectedPathEdges) return false;
+    const key = `${from}-${to}`;
+    return !inspectedPathEdges.edges.has(key);
+  };
+
+  const isNodeDimmed = (nodeId: string) => {
+    if (!inspectedPathEdges) return false;
+    return !inspectedPathEdges.pathNodes.has(nodeId);
   };
 
   // Convert screen coordinates to SVG viewBox coordinates
@@ -431,6 +489,7 @@ export const GraphCanvas: React.FC = () => {
             onClick={() => handleEdgeClick(edge.id)}
             onWeightChange={updateEdgeWeight}
             mode={mode}
+            isDimmed={isEdgeDimmed(edge.from, edge.to)}
           />
         ))}
 
@@ -455,6 +514,8 @@ export const GraphCanvas: React.FC = () => {
             isSelected={node.id === selectedNode}
             isEdgeStart={node.id === edgeStartNode}
             isStartNode={node.id === startNode}
+            isDimmed={isNodeDimmed(node.id)}
+            highlightColor={inspectedPathEdges?.pathNodes.has(node.id) ? inspectedPathEdges.color : undefined}
             onClick={() => handleNodeClick(node.id)}
             onMouseDown={(e) => handleNodeMouseDown(node.id, e)}
           />

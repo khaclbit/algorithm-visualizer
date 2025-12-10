@@ -8,6 +8,8 @@ interface NodeProps {
   isSelected: boolean;
   isEdgeStart: boolean;
   isStartNode: boolean;
+  isDimmed?: boolean;
+  highlightColor?: string;
   onClick: () => void;
   onMouseDown: (e: React.MouseEvent) => void;
 }
@@ -18,6 +20,8 @@ export const Node: React.FC<NodeProps> = ({
   isSelected,
   isEdgeStart,
   isStartNode,
+  isDimmed = false,
+  highlightColor,
   onClick,
   onMouseDown,
 }) => {
@@ -39,7 +43,7 @@ export const Node: React.FC<NodeProps> = ({
 
   return (
     <g
-      className="cursor-pointer"
+      className={cn("cursor-pointer", isDimmed && "opacity-20")}
       onClick={onClick}
       onMouseDown={onMouseDown}
     >
