@@ -119,6 +119,27 @@
     stroke-width: 3;
   }
 
+  .graph-node-fw-intermediary {
+    fill: hsl(280 70% 50%);
+    stroke: hsl(280 70% 60%);
+    stroke-width: 3;
+    filter: drop-shadow(0 0 8px hsl(280 70% 50% / 0.6));
+  }
+
+  .graph-node-fw-source {
+    fill: hsl(145 60% 45%);
+    stroke: hsl(145 60% 55%);
+    stroke-width: 3;
+    filter: drop-shadow(0 0 6px hsl(145 60% 45% / 0.5));
+  }
+
+  .graph-node-fw-destination {
+    fill: hsl(25 90% 55%);
+    stroke: hsl(25 90% 65%);
+    stroke-width: 3;
+    filter: drop-shadow(0 0 6px hsl(25 90% 55% / 0.5));
+  }
+
   .graph-edge {
     /* Only transition color changes, not position */
     transition: stroke 0.15s ease, stroke-width 0.15s ease, filter 0.15s ease;

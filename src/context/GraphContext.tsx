@@ -1,8 +1,10 @@
-import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect, useRef, RefObject } from 'react';
 import { GraphModel, NodeModel, EdgeModel, createNode, createEdge } from '@/models/graph';
 import { Step } from '@/models/step';
 import { isValidWeight } from '@/lib/validation';
 import { saveGraphState, loadGraphState } from '@/lib/graphPersistence';
+import { exportCanvasToPng } from '@/lib/canvasExport';
+import { exportVisualizationToGif } from '@/lib/gifExport';
 
 export type InteractionMode = 'select' | 'add-node' | 'add-edge' | 'delete';
 
@@ -46,6 +48,19 @@ interface GraphContextType {
   directed: boolean;
   setDirected: (directed: boolean) => void;
   toggleDirection: () => Promise<void>;
+
+  // Canvas export
+  canvasSvgRef: RefObject<SVGSVGElement>;
+  exportCanvasAsImage: () => void;
+  exportAsGif: () => Promise<void>;
+  isExportingGif: boolean;
+  gifExportProgress: number;
+
+  // Path inspection mode (for Floyd-Warshall)
+  pathInspectionMode: boolean;
+  setPathInspectionMode: (mode: boolean) => void;
+  inspectedPath: { from: string | null; to: string | null };
+  setInspectedPath: (path: { from: string | null; to: string | null }) => void;
 }
 
 const GraphContext = createContext<GraphContextType | null>(null);
@@ -93,6 +108,41 @@ export const GraphProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [isRunning, setIsRunning] = useState(false);
   const [startNode, setStartNode] = useState<string | null>('A');
   const [selectedAlgorithm, setSelectedAlgorithm] = useState<AlgorithmType>('bfs');
+  const canvasSvgRef = useRef<SVGSVGElement>(null);
+  const [isExportingGif, setIsExportingGif] = useState(false);
+  const [gifExportProgress, setGifExportProgress] = useState(0);
+
+  // Path inspection mode state
+  const [pathInspectionMode, setPathInspectionMode] = useState(false);
+  const [inspectedPath, setInspectedPath] = useState<{ from: string | null; to: string | null }>({ from: null, to: null });
+
+  const exportCanvasAsImage = useCallback(() => {
+    if (canvasSvgRef.current) {
+      exportCanvasToPng(canvasSvgRef.current, 'graph.png');
+    }
+  }, []);
+
+  const exportAsGif = useCallback(async () => {
+    if (steps.length === 0) {
+      throw new Error('No algorithm steps to export. Please run an algorithm first.');
+    }
+    
+    setIsExportingGif(true);
+    setGifExportProgress(0);
+    
+    try {
+      await exportVisualizationToGif(
+        graph,
+        steps,
+        startNode,
+        { width: 800, height: 600, delay: 500 },
+        (progress) => setGifExportProgress(progress)
+      );
+    } finally {
+      setIsExportingGif(false);
+      setGifExportProgress(0);
+    }
+  }, [graph, steps, startNode]);
 
   // Save graph state to localStorage whenever it changes
   useEffect(() => {
@@ -253,6 +303,15 @@ export const GraphProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       toggleDirection,
       selectedAlgorithm,
       setSelectedAlgorithm,
+      canvasSvgRef,
+      exportCanvasAsImage,
+      exportAsGif,
+      isExportingGif,
+      gifExportProgress,
+      pathInspectionMode,
+      setPathInspectionMode,
+      inspectedPath,
+      setInspectedPath,
     }}>
       {children}
     </GraphContext.Provider>
