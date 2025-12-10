@@ -2,14 +2,24 @@ import React, { useState } from 'react';
 import { EdgeModel, NodeModel } from '@/models/graph';
 import { cn } from '@/lib/utils';
 
+interface EdgeHighlightInfo {
+  isHighlighted: boolean;
+  style?: string;
+  color?: string;
+  isOldPath?: boolean;
+  isNewPath?: boolean;
+}
+
 interface EdgeProps {
   edge: EdgeModel;
   nodes: NodeModel[];
   isHighlighted: boolean;
   isVisited?: boolean;
+  highlightInfo?: EdgeHighlightInfo;
   onClick: () => void;
   onWeightChange?: (edgeId: string, newWeight: number) => void;
   mode?: string;
+  isDimmed?: boolean;  // For path inspection mode
 }
 
 export const Edge: React.FC<EdgeProps> = ({
@@ -17,9 +27,11 @@ export const Edge: React.FC<EdgeProps> = ({
   nodes,
   isHighlighted,
   isVisited = false,
+  highlightInfo,
   onClick,
   onWeightChange,
   mode = 'select',
+  isDimmed = false,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(edge.weight.toString());
@@ -84,8 +96,33 @@ export const Edge: React.FC<EdgeProps> = ({
     }
   };
 
+  // Determine edge styling based on highlight info
+  const getEdgeStyle = () => {
+    if (highlightInfo?.isOldPath) {
+      return {
+        stroke: highlightInfo.color || 'hsl(var(--edge-default))',
+        strokeWidth: 2,
+        strokeDasharray: '8,4',
+        opacity: 0.5,
+        filter: 'none'
+      };
+    }
+    if (highlightInfo?.isNewPath) {
+      return {
+        stroke: highlightInfo.color || 'hsl(var(--edge-highlight))',
+        strokeWidth: 3.5,
+        strokeDasharray: 'none',
+        opacity: 1,
+        filter: `drop-shadow(0 0 6px ${highlightInfo.color || 'hsl(var(--edge-highlight))'})` 
+      };
+    }
+    return null;
+  };
+
+  const customStyle = getEdgeStyle();
+
   return (
-    <g className="cursor-pointer" onClick={handleClick}>
+    <g className={cn("cursor-pointer", isDimmed && "opacity-20")} onClick={handleClick}>
       {/* Edge line */}
       <line
         x1={startX}
@@ -94,11 +131,19 @@ export const Edge: React.FC<EdgeProps> = ({
         y2={endY}
         className={cn(
           'graph-edge',
-          isVisited && !isHighlighted && 'graph-edge-visited',
-          isHighlighted && 'graph-edge-highlight',
+          !customStyle && isVisited && !isHighlighted && 'graph-edge-visited',
+          !customStyle && isHighlighted && 'graph-edge-highlight',
           isEditing && 'stroke-blue-500'
         )}
-        markerEnd={edge.directed ? (isHighlighted ? 'url(#arrowhead-highlight)' : isVisited ? 'url(#arrowhead-visited)' : 'url(#arrowhead)') : undefined}
+        style={customStyle ? {
+          stroke: customStyle.stroke,
+          strokeWidth: customStyle.strokeWidth,
+          strokeDasharray: customStyle.strokeDasharray,
+          opacity: customStyle.opacity,
+          filter: customStyle.filter,
+          transition: 'stroke 0.15s ease, stroke-width 0.15s ease, opacity 0.15s ease'
+        } : undefined}
+        markerEnd={edge.directed ? (isHighlighted || highlightInfo?.isNewPath ? 'url(#arrowhead-highlight)' : isVisited ? 'url(#arrowhead-visited)' : 'url(#arrowhead)') : undefined}
       />
       
       {/* Invisible wider hitbox for easier clicking */}
