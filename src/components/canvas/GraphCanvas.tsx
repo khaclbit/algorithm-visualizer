@@ -4,7 +4,11 @@ import { Node } from './Node';
 import { Edge } from './Edge';
 import { ZoomIn, ZoomOut, Maximize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-
+import { 
+  isEdgeHighlighted as checkEdgeHighlighted, 
+  isEdgeVisited as checkEdgeVisited, 
+  getEdgeHighlightInfo 
+} from '@/lib/stepHelpers';
 interface ViewBox {
   x: number;
   y: number;
@@ -132,17 +136,15 @@ export const GraphCanvas: React.FC = () => {
   };
 
   const isEdgeHighlighted = (from: string, to: string) => {
-    if (!currentStep?.highlightEdges) return false;
-    return currentStep.highlightEdges.some(
-      e => (e.from === from && e.to === to) || (e.from === to && e.to === from)
-    );
+    return checkEdgeHighlighted(currentStep, from, to);
   };
 
   const isEdgeVisited = (from: string, to: string) => {
-    if (!currentStep?.visitedEdges) return false;
-    return currentStep.visitedEdges.some(
-      e => (e.from === from && e.to === to) || (e.from === to && e.to === from)
-    );
+    return checkEdgeVisited(currentStep, from, to);
+  };
+
+  const getEdgeInfo = (from: string, to: string) => {
+    return getEdgeHighlightInfo(currentStep, from, to);
   };
 
   // Convert screen coordinates to SVG viewBox coordinates
@@ -425,6 +427,7 @@ export const GraphCanvas: React.FC = () => {
             nodes={graph.nodes}
             isHighlighted={isEdgeHighlighted(edge.from, edge.to)}
             isVisited={isEdgeVisited(edge.from, edge.to)}
+            highlightInfo={getEdgeInfo(edge.from, edge.to)}
             onClick={() => handleEdgeClick(edge.id)}
             onWeightChange={updateEdgeWeight}
             mode={mode}

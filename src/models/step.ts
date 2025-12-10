@@ -19,7 +19,18 @@ export interface AlgorithmState {
   predecessors?: Record<string, string | null>;
   fwMatrix?: number[][];
   fwNodes?: string[];
+  fwNext?: (string | null)[][];  // Predecessor matrix for path reconstruction
   comment?: string;
+}
+
+// Floyd-Warshall path update info
+export interface FWPathUpdate {
+  from: string;
+  to: string;
+  oldPath: string[];
+  newPath: string[];
+  oldEdges: EdgePointer[];
+  newEdges: EdgePointer[];
 }
 
 export interface HighlightNodes {
@@ -29,17 +40,30 @@ export interface HighlightNodes {
   destination?: string[];
 }
 
+// Edge highlight with styling info
+export interface HighlightEdge extends EdgePointer {
+  style?: 'default' | 'dashed' | 'path-old' | 'path-new';
+  color?: string;  // Dynamic pair color
+}
+
+export interface HighlightEdges {
+  edges?: HighlightEdge[];
+  oldPath?: HighlightEdge[];  // Faded/dashed old path
+  newPath?: HighlightEdge[];  // Highlighted new path
+}
+
 export interface Step {
   id: string;
   type: StepType;
   highlightNodes?: string[] | HighlightNodes;
-  highlightEdges?: EdgePointer[];
+  highlightEdges?: EdgePointer[] | HighlightEdges;
   visitedNodes?: string[];
   visitedEdges?: EdgePointer[];
   queuedNodes?: string[];
   rejectedNodes?: string[];
   currentNode?: string;
   state?: AlgorithmState;
+  fwPathUpdate?: FWPathUpdate;  // Path update info for FW visualization
 }
 
 export const createStep = (

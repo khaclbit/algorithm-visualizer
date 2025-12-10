@@ -55,6 +55,12 @@ interface GraphContextType {
   exportAsGif: () => Promise<void>;
   isExportingGif: boolean;
   gifExportProgress: number;
+
+  // Path inspection mode (for Floyd-Warshall)
+  pathInspectionMode: boolean;
+  setPathInspectionMode: (mode: boolean) => void;
+  inspectedPath: { from: string | null; to: string | null };
+  setInspectedPath: (path: { from: string | null; to: string | null }) => void;
 }
 
 const GraphContext = createContext<GraphContextType | null>(null);
@@ -105,6 +111,10 @@ export const GraphProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const canvasSvgRef = useRef<SVGSVGElement>(null);
   const [isExportingGif, setIsExportingGif] = useState(false);
   const [gifExportProgress, setGifExportProgress] = useState(0);
+
+  // Path inspection mode state
+  const [pathInspectionMode, setPathInspectionMode] = useState(false);
+  const [inspectedPath, setInspectedPath] = useState<{ from: string | null; to: string | null }>({ from: null, to: null });
 
   const exportCanvasAsImage = useCallback(() => {
     if (canvasSvgRef.current) {
@@ -298,6 +308,10 @@ export const GraphProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       exportAsGif,
       isExportingGif,
       gifExportProgress,
+      pathInspectionMode,
+      setPathInspectionMode,
+      inspectedPath,
+      setInspectedPath,
     }}>
       {children}
     </GraphContext.Provider>

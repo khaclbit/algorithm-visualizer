@@ -1,6 +1,6 @@
 import GIF from 'gif.js';
 import { GraphModel } from '@/models/graph';
-import { Step } from '@/models/step';
+import { Step, HighlightEdges } from '@/models/step';
 
 interface GifExportOptions {
   width?: number;
@@ -59,7 +59,23 @@ const getNodeStateForStep = (
  */
 const isEdgeHighlightedForStep = (from: string, to: string, step: Step | null): boolean => {
   if (!step?.highlightEdges) return false;
-  return step.highlightEdges.some(
+  
+  // Handle legacy array format
+  if (Array.isArray(step.highlightEdges)) {
+    return step.highlightEdges.some(
+      e => (e.from === from && e.to === to) || (e.from === to && e.to === from)
+    );
+  }
+  
+  // Handle new structured format
+  const highlights = step.highlightEdges as HighlightEdges;
+  const allEdges = [
+    ...(highlights.edges || []),
+    ...(highlights.oldPath || []),
+    ...(highlights.newPath || [])
+  ];
+  
+  return allEdges.some(
     e => (e.from === from && e.to === to) || (e.from === to && e.to === from)
   );
 };
