@@ -16,8 +16,16 @@ export interface EdgeDefinition {
   rawText: string;
 }
 
+export interface VertexDefinition {
+  id: string;
+  weight?: number;
+  lineNumber: number;
+  rawText: string;
+}
+
 export interface ParsedGraph {
   vertices: Set<string>;
+  vertexDefinitions?: VertexDefinition[]; // Explicit vertex definitions with weights
   edgeDefinitions: EdgeDefinition[];
   adjacencyMap: Map<string, string[]>;
   metadata: ParseMetadata;
@@ -56,6 +64,8 @@ export interface ParseOptions {
   strictWhitespace?: boolean;      // Default: false
   maxNodes?: number;               // Default: 1000
   maxEdges?: number;               // Default: 1000
+  parseMode?: 'edges' | 'vertices' | 'mixed'; // Default: 'edges', 'vertices' for A*
+  requireVertexWeights?: boolean;  // Default: false, true for A*
 }
 
 export interface ParseResult {

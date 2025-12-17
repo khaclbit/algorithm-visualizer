@@ -8,8 +8,10 @@ interface NodeProps {
   isSelected: boolean;
   isEdgeStart: boolean;
   isStartNode: boolean;
+  isTargetNode?: boolean;
   isDimmed?: boolean;
   highlightColor?: string;
+  showWeight?: boolean; // Show heuristic weight (for A*)
   onClick: () => void;
   onMouseDown: (e: React.MouseEvent) => void;
 }
@@ -20,8 +22,10 @@ export const Node: React.FC<NodeProps> = ({
   isSelected,
   isEdgeStart,
   isStartNode,
+  isTargetNode = false,
   isDimmed = false,
   highlightColor,
+  showWeight = false,
   onClick,
   onMouseDown,
 }) => {
@@ -72,6 +76,19 @@ export const Node: React.FC<NodeProps> = ({
           strokeWidth={2}
         />
       )}
+
+      {/* Target node indicator (for A*) */}
+      {isTargetNode && state === 'default' && (
+        <circle
+          cx={node.x}
+          cy={node.y}
+          r={radius + 4}
+          fill="none"
+          stroke="hsl(var(--destructive))"
+          strokeWidth={2}
+          strokeDasharray="4,4"
+        />
+      )}
       
       {/* Main node circle */}
       <circle
@@ -84,13 +101,26 @@ export const Node: React.FC<NodeProps> = ({
       {/* Node label */}
       <text
         x={node.x}
-        y={node.y}
+        y={showWeight && node.weight !== undefined ? node.y - 6 : node.y}
         textAnchor="middle"
         dominantBaseline="central"
         className="fill-foreground font-mono font-semibold text-sm pointer-events-none select-none"
       >
         {node.label || node.id}
       </text>
+
+      {/* Heuristic weight display (for A*) */}
+      {showWeight && node.weight !== undefined && (
+        <text
+          x={node.x}
+          y={node.y + 10}
+          textAnchor="middle"
+          dominantBaseline="central"
+          className="fill-muted-foreground font-mono text-[10px] pointer-events-none select-none"
+        >
+          h={node.weight}
+        </text>
+      )}
     </g>
   );
 };
