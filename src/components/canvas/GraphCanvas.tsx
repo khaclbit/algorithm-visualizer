@@ -35,10 +35,13 @@ export const GraphCanvas: React.FC = () => {
     steps,
     currentStepIndex,
     startNode,
+    targetNode,
     selectedAlgorithm,
     pathInspectionMode,
     inspectedPath,
   } = useGraph();
+
+  const isAstar = selectedAlgorithm === 'astar';
 
   const svgRef = useGraph().canvasSvgRef;
   const containerRef = useRef<HTMLDivElement>(null);
@@ -514,8 +517,10 @@ export const GraphCanvas: React.FC = () => {
             isSelected={node.id === selectedNode}
             isEdgeStart={node.id === edgeStartNode}
             isStartNode={node.id === startNode}
+            isTargetNode={isAstar && node.id === targetNode}
             isDimmed={isNodeDimmed(node.id)}
             highlightColor={inspectedPathEdges?.pathNodes.has(node.id) ? inspectedPathEdges.color : undefined}
+            showWeight={isAstar}
             onClick={() => handleNodeClick(node.id)}
             onMouseDown={(e) => handleNodeMouseDown(node.id, e)}
           />
