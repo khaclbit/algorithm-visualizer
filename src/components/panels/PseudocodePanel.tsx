@@ -60,11 +60,35 @@ const floydWarshallPseudocode: PseudocodeLine[] = [
   { line: 'dist[i][j] ← dist[i][k] + dist[k][j]', indent: 5 },
 ];
 
+const astarPseudocode: PseudocodeLine[] = [
+  { line: 'A*(G, start, target):', indent: 0 },
+  { line: 'openSet ← {start}', indent: 1, stepTypes: ['custom'] },
+  { line: 'closedSet ← {}', indent: 1 },
+  { line: 'g[v] ← ∞ for all v', indent: 1 },
+  { line: 'g[start] ← 0', indent: 1 },
+  { line: 'f[v] ← g[v] + h[v]', indent: 1 },
+  { line: 'while openSet is not empty:', indent: 1 },
+  { line: 'u ← node in openSet with lowest f', indent: 2, stepTypes: ['visit-node'] },
+  { line: 'if u = target:', indent: 2 },
+  { line: 'return reconstructPath()', indent: 3 },
+  { line: 'openSet.remove(u)', indent: 2 },
+  { line: 'closedSet.add(u)', indent: 2 },
+  { line: 'for each neighbor v of u:', indent: 2, stepTypes: ['inspect-edge'] },
+  { line: 'if v in closedSet: continue', indent: 3 },
+  { line: 'tentative_g ← g[u] + weight(u,v)', indent: 3, stepTypes: ['relax-edge'] },
+  { line: 'if tentative_g < g[v]:', indent: 3 },
+  { line: 'g[v] ← tentative_g', indent: 4 },
+  { line: 'f[v] ← g[v] + h[v]', indent: 4 },
+  { line: 'openSet.add(v)', indent: 4 },
+  { line: 'return "no path"', indent: 1 },
+];
+
 const pseudocodeMap: Record<string, PseudocodeLine[]> = {
   bfs: bfsPseudocode,
   dfs: dfsPseudocode,
   dijkstra: dijkstraPseudocode,
   'floyd-warshall': floydWarshallPseudocode,
+  astar: astarPseudocode,
 };
 
 export const PseudocodePanel: React.FC = () => {

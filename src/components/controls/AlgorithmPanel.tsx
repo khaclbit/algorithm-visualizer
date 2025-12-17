@@ -1,14 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useGraph, AlgorithmType } from '@/context/GraphContext';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Play, RotateCcw, AlertCircle } from 'lucide-react';
+import { Play, RotateCcw, AlertCircle, CheckCircle2, XCircle } from 'lucide-react';
 import { bfs } from '@/algorithms/bfs';
 import { dfs } from '@/algorithms/dfs';
 import { dijkstra } from '@/algorithms/dijkstra';
 import { floydWarshall } from '@/algorithms/floydWarshall';
+import { astar, AStarResult } from '@/algorithms/astar';
 
 const algorithms: { id: AlgorithmType; name: string; needsStart: boolean; needsTarget: boolean }[] = [
   { id: 'bfs', name: 'Breadth-First Search', needsStart: true, needsTarget: false },
@@ -33,6 +35,9 @@ export const AlgorithmPanel: React.FC = () => {
     setSelectedAlgorithm,
   } = useGraph();
 
+  // A* result state for summary display
+  const [astarResult, setAstarResult] = useState<AStarResult | null>(null);
+
   const currentAlgo = algorithms.find(a => a.id === selectedAlgorithm)!;
   const isAstar = selectedAlgorithm === 'astar';
 
@@ -47,6 +52,8 @@ export const AlgorithmPanel: React.FC = () => {
     if (graph.nodes.length === 0) return;
 
     let steps;
+    setAstarResult(null); // Clear previous A* result
+
     switch (selectedAlgorithm) {
       case 'bfs':
         steps = bfs(graph, startNode!);
@@ -61,10 +68,10 @@ export const AlgorithmPanel: React.FC = () => {
         steps = floydWarshall(graph);
         break;
       case 'astar':
-        // A* algorithm will be implemented in Phase 2
-        // For now, show a placeholder message
-        console.log('A* algorithm execution will be implemented in Phase 2');
-        return;
+        const result = astar(graph, startNode!, targetNode!);
+        steps = result.steps;
+        setAstarResult(result);
+        break;
     }
 
     setSteps(steps);
@@ -76,6 +83,7 @@ export const AlgorithmPanel: React.FC = () => {
     setSteps([]);
     setCurrentStepIndex(-1);
     setIsRunning(false);
+    setAstarResult(null);
   };
 
   return (
@@ -186,6 +194,46 @@ export const AlgorithmPanel: React.FC = () => {
             <RotateCcw className="h-4 w-4" />
           </Button>
         </div>
+
+        {/* A* Result Summary */}
+        {isAstar && astarResult && (
+          <div className={cn(
+            "rounded-lg border p-3 space-y-2 animate-fade-in",
+            astarResult.pathFound 
+              ? "border-green-500/50 bg-green-500/10" 
+              : "border-destructive/50 bg-destructive/10"
+          )}>
+            <div className="flex items-center gap-2">
+              {astarResult.pathFound ? (
+                <CheckCircle2 className="h-4 w-4 text-green-500" />
+              ) : (
+                <XCircle className="h-4 w-4 text-destructive" />
+              )}
+              <span className="text-sm font-medium">
+                {astarResult.pathFound ? 'Path Found!' : 'No Path Found'}
+              </span>
+            </div>
+            
+            {astarResult.pathFound && (
+              <>
+                <div className="text-xs text-muted-foreground">
+                  <span className="font-medium">Path:</span>{' '}
+                  <span className="font-mono">{astarResult.path.join(' → ')}</span>
+                </div>
+                <div className="flex gap-4 text-xs">
+                  <div>
+                    <span className="text-muted-foreground">Total Cost:</span>{' '}
+                    <span className="font-semibold">{astarResult.totalCost}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Visited:</span>{' '}
+                    <span className="font-semibold">{astarResult.visitedCount} nodes</span>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
