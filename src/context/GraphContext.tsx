@@ -20,6 +20,7 @@ interface GraphContextType {
   removeEdge: (id: string) => void;
   updateEdge: (id: string, updates: Partial<EdgeModel>) => void;
   updateEdgeWeight: (edgeId: string, weight: number) => Promise<boolean>;
+  updateNodeWeight: (nodeId: string, weight: number) => Promise<boolean>;
   clearGraph: () => void;
   
   mode: InteractionMode;
@@ -229,6 +230,29 @@ export const GraphProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     return true;
   }, [graph.edges]);
 
+  const updateNodeWeight = useCallback(async (nodeId: string, weight: number): Promise<boolean> => {
+    if (weight < 0 || !isFinite(weight) || isNaN(weight)) {
+      return false;
+    }
+
+    const nodeExists = graph.nodes.some(n => n.id === nodeId);
+    if (!nodeExists) {
+      return false;
+    }
+
+    setGraph(prev => ({
+      ...prev,
+      nodes: prev.nodes.map(n => n.id === nodeId ? { ...n, weight } : n),
+    }));
+
+    // Reset algorithm state since weights changed
+    setSteps([]);
+    setCurrentStepIndex(-1);
+    setIsRunning(false);
+
+    return true;
+  }, [graph.nodes]);
+
   const clearGraph = useCallback(() => {
     setGraph({ nodes: [], edges: [], directed: false });
     setSelectedNode(null);
@@ -287,6 +311,7 @@ export const GraphProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       removeEdge,
       updateEdge,
       updateEdgeWeight,
+      updateNodeWeight,
       clearGraph,
       mode,
       setMode,

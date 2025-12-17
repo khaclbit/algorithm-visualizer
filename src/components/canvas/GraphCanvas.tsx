@@ -27,6 +27,7 @@ export const GraphCanvas: React.FC = () => {
     addEdge,
     removeEdge,
     updateEdgeWeight,
+    updateNodeWeight,
     mode,
     selectedNode,
     setSelectedNode,
@@ -521,6 +522,8 @@ export const GraphCanvas: React.FC = () => {
             isDimmed={isNodeDimmed(node.id)}
             highlightColor={inspectedPathEdges?.pathNodes.has(node.id) ? inspectedPathEdges.color : undefined}
             showWeight={isAstar}
+            onWeightChange={isAstar ? updateNodeWeight : undefined}
+            mode={mode}
             onClick={() => handleNodeClick(node.id)}
             onMouseDown={(e) => handleNodeMouseDown(node.id, e)}
           />
