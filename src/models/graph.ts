@@ -5,6 +5,7 @@ export interface NodeModel {
   label?: string;
   x: number;
   y: number;
+  weight?: number; // Heuristic weight for A* algorithm (optional)
 }
 
 export interface EdgeModel {

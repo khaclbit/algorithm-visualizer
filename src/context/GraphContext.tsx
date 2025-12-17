@@ -8,7 +8,7 @@ import { exportVisualizationToGif } from '@/lib/gifExport';
 
 export type InteractionMode = 'select' | 'add-node' | 'add-edge' | 'delete';
 
-export type AlgorithmType = 'bfs' | 'dfs' | 'dijkstra' | 'floyd-warshall';
+export type AlgorithmType = 'bfs' | 'dfs' | 'dijkstra' | 'floyd-warshall' | 'astar';
 
 interface GraphContextType {
   graph: GraphModel;
@@ -20,6 +20,7 @@ interface GraphContextType {
   removeEdge: (id: string) => void;
   updateEdge: (id: string, updates: Partial<EdgeModel>) => void;
   updateEdgeWeight: (edgeId: string, weight: number) => Promise<boolean>;
+  updateNodeWeight: (nodeId: string, weight: number) => Promise<boolean>;
   clearGraph: () => void;
   
   mode: InteractionMode;
@@ -39,6 +40,8 @@ interface GraphContextType {
   
   startNode: string | null;
   setStartNode: (id: string | null) => void;
+  targetNode: string | null;
+  setTargetNode: (id: string | null) => void;
 
   // Algorithm selection
   selectedAlgorithm: AlgorithmType;
@@ -107,6 +110,7 @@ export const GraphProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [currentStepIndex, setCurrentStepIndex] = useState(-1);
   const [isRunning, setIsRunning] = useState(false);
   const [startNode, setStartNode] = useState<string | null>('A');
+  const [targetNode, setTargetNode] = useState<string | null>(null);
   const [selectedAlgorithm, setSelectedAlgorithm] = useState<AlgorithmType>('bfs');
   const canvasSvgRef = useRef<SVGSVGElement>(null);
   const [isExportingGif, setIsExportingGif] = useState(false);
@@ -166,7 +170,8 @@ export const GraphProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }));
     if (selectedNode === id) setSelectedNode(null);
     if (startNode === id) setStartNode(null);
-  }, [selectedNode, startNode]);
+    if (targetNode === id) setTargetNode(null);
+  }, [selectedNode, startNode, targetNode]);
 
   const updateNode = useCallback((id: string, updates: Partial<NodeModel>) => {
     setGraph(prev => ({
@@ -224,6 +229,29 @@ export const GraphProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
     return true;
   }, [graph.edges]);
+
+  const updateNodeWeight = useCallback(async (nodeId: string, weight: number): Promise<boolean> => {
+    if (weight < 0 || !isFinite(weight) || isNaN(weight)) {
+      return false;
+    }
+
+    const nodeExists = graph.nodes.some(n => n.id === nodeId);
+    if (!nodeExists) {
+      return false;
+    }
+
+    setGraph(prev => ({
+      ...prev,
+      nodes: prev.nodes.map(n => n.id === nodeId ? { ...n, weight } : n),
+    }));
+
+    // Reset algorithm state since weights changed
+    setSteps([]);
+    setCurrentStepIndex(-1);
+    setIsRunning(false);
+
+    return true;
+  }, [graph.nodes]);
 
   const clearGraph = useCallback(() => {
     setGraph({ nodes: [], edges: [], directed: false });
@@ -283,6 +311,7 @@ export const GraphProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       removeEdge,
       updateEdge,
       updateEdgeWeight,
+      updateNodeWeight,
       clearGraph,
       mode,
       setMode,
@@ -298,6 +327,8 @@ export const GraphProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       setIsRunning,
       startNode,
       setStartNode,
+      targetNode,
+      setTargetNode,
       directed: graph.directed ?? false,
       setDirected,
       toggleDirection,

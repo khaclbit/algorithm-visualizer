@@ -1,6 +1,7 @@
 import {
   GraphTextRepresentation,
   EdgeDefinition,
+  VertexDefinition,
   ParsedGraph,
   ParseMetadata,
   ValidationError,
@@ -11,6 +12,7 @@ import {
 /**
  * IGraphTextParser interface implementation
  * Parses text input in "vertex1 vertex2 weight" format into graph data structures
+ * Also supports "vertex weight" format for A* algorithm vertex definitions
  */
 export class GraphTextParser {
   private static readonly DEFAULT_OPTIONS: Required<ParseOptions> = {
@@ -19,19 +21,27 @@ export class GraphTextParser {
     strictWhitespace: false,
     maxNodes: 1000,
     maxEdges: 1000,
+    parseMode: 'edges',
+    requireVertexWeights: false,
   };
 
   private static readonly VERTEX_REGEX = /^[a-zA-Z0-9_]+$/;
   private static readonly LINE_FORMAT_REGEX = /^(\S+)\s+(\S+)\s+(\S+)$/;
+  private static readonly VERTEX_ONLY_REGEX = /^(\S+)$/;
+  private static readonly VERTEX_WEIGHT_REGEX = /^(\S+)\s+(\S+)$/;
 
   /**
    * Parse text input into graph representation
+   * Supports two modes:
+   * - 'edges': Parse "vertex1 vertex2 weight" edge format (default)
+   * - 'vertices': Parse "vertex weight" vertex definition format (for A*)
    */
   public parseText(text: string, options: ParseOptions = {}): ParseResult {
     const startTime = performance.now();
     const config = { ...GraphTextParser.DEFAULT_OPTIONS, ...options };
     const errors: ValidationError[] = [];
     const edgeDefinitions: EdgeDefinition[] = [];
+    const vertexDefinitions: VertexDefinition[] = [];
     const vertices = new Set<string>();
     
     try {
@@ -43,43 +53,83 @@ export class GraphTextParser {
         
         // Skip empty lines
         if (line === '') continue;
-        
-        const edgeResult = this.parseEdgeLine(line, lineNumber, config);
-        
-        if (edgeResult.error) {
-          errors.push(edgeResult.error);
-          continue;
-        }
-        
-        if (edgeResult.edge) {
-          const { edge } = edgeResult;
+
+        // Parse based on mode
+        if (config.parseMode === 'vertices') {
+          const vertexResult = this.parseVertexLine(line, lineNumber, config);
           
-          // Check for self-loops if not allowed
-          if (!config.allowSelfLoops && edge.sourceVertex === edge.targetVertex) {
-            errors.push(this.createValidationError(
-              'vertex_invalid',
-              lineNumber,
-              `Self-loops are not allowed: ${edge.sourceVertex} → ${edge.targetVertex}`,
-              'Use different source and target vertices'
-            ));
+          if (vertexResult.error) {
+            errors.push(vertexResult.error);
             continue;
           }
           
-          vertices.add(edge.sourceVertex);
-          vertices.add(edge.targetVertex);
-          
-          // Handle duplicate edges
-          if (config.allowDuplicateEdges) {
-            // Remove previous edge with same vertices (last definition wins)
-            const existingIndex = edgeDefinitions.findIndex(
-              e => e.sourceVertex === edge.sourceVertex && e.targetVertex === edge.targetVertex
-            );
-            if (existingIndex >= 0) {
-              edgeDefinitions.splice(existingIndex, 1);
+          if (vertexResult.vertex) {
+            const { vertex } = vertexResult;
+            
+            // Check for duplicate vertex definitions
+            if (vertices.has(vertex.id)) {
+              // Update existing vertex definition (last wins)
+              const existingIndex = vertexDefinitions.findIndex(v => v.id === vertex.id);
+              if (existingIndex >= 0) {
+                vertexDefinitions.splice(existingIndex, 1);
+              }
             }
+            
+            vertices.add(vertex.id);
+            vertexDefinitions.push(vertex);
+          }
+        } else {
+          // Parse as edge definition (default)
+          const edgeResult = this.parseEdgeLine(line, lineNumber, config);
+          
+          if (edgeResult.error) {
+            errors.push(edgeResult.error);
+            continue;
           }
           
-          edgeDefinitions.push(edge);
+          if (edgeResult.edge) {
+            const { edge } = edgeResult;
+            
+            // Check for self-loops if not allowed
+            if (!config.allowSelfLoops && edge.sourceVertex === edge.targetVertex) {
+              errors.push(this.createValidationError(
+                'vertex_invalid',
+                lineNumber,
+                `Self-loops are not allowed: ${edge.sourceVertex} → ${edge.targetVertex}`,
+                'Use different source and target vertices'
+              ));
+              continue;
+            }
+            
+            vertices.add(edge.sourceVertex);
+            vertices.add(edge.targetVertex);
+            
+            // Handle duplicate edges
+            if (config.allowDuplicateEdges) {
+              // Remove previous edge with same vertices (last definition wins)
+              const existingIndex = edgeDefinitions.findIndex(
+                e => e.sourceVertex === edge.sourceVertex && e.targetVertex === edge.targetVertex
+              );
+              if (existingIndex >= 0) {
+                edgeDefinitions.splice(existingIndex, 1);
+              }
+            }
+            
+            edgeDefinitions.push(edge);
+          }
+        }
+      }
+
+      // Validate vertex weights if required (for A*)
+      if (config.requireVertexWeights && config.parseMode === 'vertices') {
+        const verticesWithoutWeight = vertexDefinitions.filter(v => v.weight === undefined);
+        if (verticesWithoutWeight.length > 0) {
+          errors.push(this.createValidationError(
+            'weight_invalid',
+            0,
+            `Missing weights for vertices: ${verticesWithoutWeight.map(v => v.id).join(', ')}`,
+            'Add weight to each vertex using "VERTEX WEIGHT" format (e.g., "A 5")'
+          ));
         }
       }
       
@@ -115,6 +165,7 @@ export class GraphTextParser {
       
       const parsedGraph: ParsedGraph = {
         vertices,
+        vertexDefinitions: config.parseMode === 'vertices' ? vertexDefinitions : undefined,
         edgeDefinitions,
         adjacencyMap,
         metadata,
@@ -191,6 +242,96 @@ export class GraphTextParser {
    */
   private splitIntoLines(text: string): string[] {
     return text.split(/\r\n|\r|\n/);
+  }
+
+  /**
+   * Parse a single line into a VertexDefinition (for A* mode)
+   * Format: "VERTEX" or "VERTEX WEIGHT"
+   */
+  private parseVertexLine(
+    line: string,
+    lineNumber: number,
+    config: Required<ParseOptions>
+  ): { vertex?: VertexDefinition; error?: ValidationError } {
+    const trimmedLine = line.trim();
+    
+    // Try "VERTEX WEIGHT" format first
+    const weightMatch = trimmedLine.match(GraphTextParser.VERTEX_WEIGHT_REGEX);
+    if (weightMatch) {
+      const [, vertexId, weightStr] = weightMatch;
+      
+      // Validate vertex name
+      if (!GraphTextParser.VERTEX_REGEX.test(vertexId)) {
+        return {
+          error: this.createValidationError(
+            'vertex_invalid',
+            lineNumber,
+            `Invalid vertex "${vertexId}". Use only letters, numbers, and underscores`,
+            'Rename vertex to use alphanumeric characters only'
+          ),
+        };
+      }
+      
+      // Validate weight
+      const weight = parseFloat(weightStr);
+      if (isNaN(weight) || !isFinite(weight) || weight < 0) {
+        return {
+          error: this.createValidationError(
+            'weight_invalid',
+            lineNumber,
+            `Invalid weight "${weightStr}". Must be a non-negative number`,
+            'Use a numeric value like 0, 5, or 10.5'
+          ),
+        };
+      }
+      
+      return {
+        vertex: { id: vertexId, weight, lineNumber, rawText: line },
+      };
+    }
+    
+    // Try vertex-only format
+    const vertexMatch = trimmedLine.match(GraphTextParser.VERTEX_ONLY_REGEX);
+    if (vertexMatch) {
+      const [, vertexId] = vertexMatch;
+      
+      if (!GraphTextParser.VERTEX_REGEX.test(vertexId)) {
+        return {
+          error: this.createValidationError(
+            'vertex_invalid',
+            lineNumber,
+            `Invalid vertex "${vertexId}". Use only letters, numbers, and underscores`,
+            'Rename vertex to use alphanumeric characters only'
+          ),
+        };
+      }
+      
+      // If weights are required, this is an error
+      if (config.requireVertexWeights) {
+        return {
+          error: this.createValidationError(
+            'weight_invalid',
+            lineNumber,
+            `Missing weight for vertex "${vertexId}"`,
+            'Add weight using "VERTEX WEIGHT" format (e.g., "A 5")'
+          ),
+        };
+      }
+      
+      return {
+        vertex: { id: vertexId, lineNumber, rawText: line },
+      };
+    }
+    
+    return {
+      error: this.createValidationError(
+        'format_error',
+        lineNumber,
+        'Invalid line format. Expected: "VERTEX" or "VERTEX WEIGHT"',
+        'Use format like "A" or "A 5"',
+        [0, line.length]
+      ),
+    };
   }
 
   /**
